@@ -230,24 +230,34 @@ export default function RunDetailPage() {
     }
   }
 
-  if (error && !run) return <p className="text-sm text-red-700">{error}</p>;
-  if (!run) return <p className="text-sm text-slate-600">Loading run... / 正在加载运行...</p>;
+  if (error && !run) return <p className="surface border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>;
+  if (!run) return <p className="surface p-4 text-sm text-slate-600">Loading run... / 正在加载运行...</p>;
   const canCancel = ["created", "running", "paused"].includes(run.status);
   const canRerun = ["completed", "failed", "rejected", "canceled"].includes(run.status);
   const canCompareShadow = run.shadow_mode && canRerun;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[0.7fr_1.3fr]">
+    <div className="grid gap-6 xl:grid-cols-[420px_1fr]">
       <section className="space-y-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-ink">Run Detail / 运行详情</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            {run.run_id} · {run.status} · {run.shadow_mode ? "shadow / 影子" : "live / 正式"} · workflow / 工作流 v{run.workflow_version ?? "unknown"}
-          </p>
+        <div className="surface p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Runtime operation / 运行操作</p>
+              <h1 className="page-heading mt-1">Run Detail / 运行详情</h1>
+              <p className="page-subtitle break-all">{run.run_id}</p>
+            </div>
+            <span className={`status-pill ${runStatusClass(run.status)}`}>{run.status}</span>
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <RunFact label="Workflow / 工作流" value={run.workflow_id} />
+            <RunFact label="Version / 版本" value={`v${run.workflow_version ?? "unknown"}`} />
+            <RunFact label="Mode / 模式" value={run.shadow_mode ? "shadow / 影子" : "live / 正式"} />
+            <RunFact label="Current Node / 当前节点" value={run.current_node_id ?? "-"} />
+          </div>
         </div>
-        {error ? <p className="rounded-md border border-red-200 bg-white p-3 text-sm text-red-700">{error}</p> : null}
+        {error ? <p className="surface border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p> : null}
         {run.status === "paused" ? (
-          <div className="rounded-md border border-line bg-white p-5 shadow-sm">
+          <div className="surface p-5">
             <h2 className="text-sm font-semibold text-ink">Approval Required / 需要审批</h2>
             <p className="mt-1 text-sm text-slate-600">
               Current node / 当前节点: {run.current_node_id ?? "unknown"}
@@ -258,7 +268,7 @@ export default function RunDetailPage() {
                 <textarea
                   value={approvalPayloadText}
                   onChange={(event) => setApprovalPayloadText(event.target.value)}
-                  className="min-h-28 w-full rounded-md border border-line bg-white p-3 font-mono text-xs text-ink outline-none focus:border-accent"
+                  className="min-h-28 w-full rounded-md border border-line bg-white p-3 font-mono text-xs text-ink shadow-sm focus:border-accent focus:ring-2 focus:ring-accent/15"
                   spellCheck={false}
                 />
               </label>
@@ -271,7 +281,7 @@ export default function RunDetailPage() {
                     max="200"
                     value={approvalMaxSteps}
                     onChange={(event) => setApprovalMaxSteps(Number(event.target.value))}
-                    className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm"
+                    className="control-input w-full"
                   />
                 </label>
                 <label className="block">
@@ -282,7 +292,7 @@ export default function RunDetailPage() {
                     max="5"
                     value={approvalMaxRetries}
                     onChange={(event) => setApprovalMaxRetries(Number(event.target.value))}
-                    className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm"
+                    className="control-input w-full"
                   />
                 </label>
               </div>
@@ -292,7 +302,7 @@ export default function RunDetailPage() {
                 type="button"
                 onClick={() => submitApproval(true)}
                 disabled={approvalBusy}
-                className="inline-flex items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-[#0F5860] disabled:opacity-60"
+                className="control-button-primary"
               >
                 <Check className="h-4 w-4" aria-hidden />
                 Approve / 通过
@@ -301,7 +311,7 @@ export default function RunDetailPage() {
                 type="button"
                 onClick={() => submitApproval(false)}
                 disabled={approvalBusy}
-                className="inline-flex items-center gap-2 rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-ink hover:border-red-700 disabled:opacity-60"
+                className="control-button hover:border-red-700 hover:text-red-700"
               >
                 <X className="h-4 w-4" aria-hidden />
                 Reject / 拒绝
@@ -310,14 +320,14 @@ export default function RunDetailPage() {
           </div>
         ) : null}
         {canCancel ? (
-          <div className="rounded-md border border-line bg-white p-5 shadow-sm">
+          <div className="surface p-5">
             <h2 className="text-sm font-semibold text-ink">Cancel / 取消</h2>
             <label className="mt-3 block">
               <span className="mb-2 block text-xs uppercase text-slate-500">Reason / 原因</span>
               <textarea
                 value={cancelReason}
                 onChange={(event) => setCancelReason(event.target.value)}
-                className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
+                className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm shadow-sm focus:border-accent focus:ring-2 focus:ring-accent/15"
               />
             </label>
             <button
@@ -332,14 +342,14 @@ export default function RunDetailPage() {
           </div>
         ) : null}
         {canRerun ? (
-          <div className="rounded-md border border-line bg-white p-5 shadow-sm">
+          <div className="surface p-5">
             <h2 className="text-sm font-semibold text-ink">Rerun / 重跑</h2>
             <label className="mt-3 block">
               <span className="mb-2 block text-xs uppercase text-slate-500">Reason / 原因</span>
               <textarea
                 value={rerunReason}
                 onChange={(event) => setRerunReason(event.target.value)}
-                className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
+                className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm shadow-sm focus:border-accent focus:ring-2 focus:ring-accent/15"
               />
             </label>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
@@ -351,7 +361,7 @@ export default function RunDetailPage() {
                   max="200"
                   value={rerunMaxSteps}
                   onChange={(event) => setRerunMaxSteps(Number(event.target.value))}
-                  className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm"
+                  className="control-input w-full"
                 />
               </label>
               <label className="block">
@@ -362,7 +372,7 @@ export default function RunDetailPage() {
                   max="5"
                   value={rerunMaxRetries}
                   onChange={(event) => setRerunMaxRetries(Number(event.target.value))}
-                  className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm"
+                  className="control-input w-full"
                 />
               </label>
               <label className="block">
@@ -370,7 +380,7 @@ export default function RunDetailPage() {
                 <input
                   value={rerunIdempotencyKey}
                   onChange={(event) => setRerunIdempotencyKey(event.target.value)}
-                  className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm"
+                  className="control-input w-full"
                 />
               </label>
               <label className="block">
@@ -378,7 +388,7 @@ export default function RunDetailPage() {
                 <select
                   value={rerunShadowMode}
                   onChange={(event) => setRerunShadowMode(event.target.value as "preserve" | "shadow" | "live")}
-                  className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm"
+                  className="control-input w-full"
                 >
                   <option value="preserve">preserve source / 保持来源</option>
                   <option value="shadow">shadow / 影子</option>
@@ -390,7 +400,7 @@ export default function RunDetailPage() {
               type="button"
               onClick={rerunRun}
               disabled={rerunBusy}
-              className="mt-3 inline-flex items-center gap-2 rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-ink hover:border-accent disabled:opacity-60"
+              className="control-button mt-3"
             >
               <RotateCcw className="h-4 w-4" aria-hidden />
               Rerun / 重跑
@@ -411,10 +421,19 @@ export default function RunDetailPage() {
             onSubmit={submitShadowComparison}
           />
         ) : null}
-        <JsonViewer data={run.output_payload} />
+        <section>
+          <h2 className="mb-3 text-sm font-semibold text-ink">Output / 输出</h2>
+          <JsonViewer data={run.output_payload} />
+        </section>
       </section>
-      <section>
-        <h2 className="mb-3 text-sm font-semibold text-ink">Trace Timeline / 追踪时间线</h2>
+      <section className="space-y-4">
+        <div className="surface flex flex-wrap items-center justify-between gap-3 p-5">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Trace account / 追踪账户</p>
+            <h2 className="mt-1 text-base font-semibold text-ink">Trace Timeline / 追踪时间线</h2>
+          </div>
+          <span className="status-pill">{traces.length} traces / 追踪</span>
+        </div>
         <TraceTimeline traces={traces} />
       </section>
     </div>
@@ -443,7 +462,7 @@ function ShadowComparisonPanel({
   onSubmit: () => void;
 }) {
   return (
-    <div className="rounded-md border border-line bg-white p-5 shadow-sm">
+    <div className="surface p-5">
       <h2 className="text-sm font-semibold text-ink">Shadow Comparison / 影子运行对比</h2>
       <div className="mt-3 space-y-3">
         <label className="block text-xs uppercase text-slate-500" htmlFor="expected-output">
@@ -453,14 +472,14 @@ function ShadowComparisonPanel({
           id="expected-output"
           value={expectedOutputText}
           onChange={(event) => onExpectedOutputChange(event.target.value)}
-          className="min-h-32 w-full rounded-md border border-line bg-white p-3 font-mono text-xs text-ink"
+          className="min-h-32 w-full rounded-md border border-line bg-white p-3 font-mono text-xs text-ink shadow-sm focus:border-accent focus:ring-2 focus:ring-accent/15"
         />
         <label className="block">
           <span className="mb-2 block text-xs uppercase text-slate-500">Notes / 备注</span>
           <textarea
             value={comparisonNotes}
             onChange={(event) => onComparisonNotesChange(event.target.value)}
-            className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
+            className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm shadow-sm focus:border-accent focus:ring-2 focus:ring-accent/15"
           />
         </label>
         <div className="flex flex-wrap items-center gap-3">
@@ -475,13 +494,13 @@ function ShadowComparisonPanel({
             step="0.05"
             value={passThreshold}
             onChange={(event) => onPassThresholdChange(Number(event.target.value))}
-            className="w-24 rounded-md border border-line bg-white px-2 py-1 text-sm"
+            className="control-input w-24 px-2 py-1"
           />
           <button
             type="button"
             onClick={onSubmit}
             disabled={busy}
-            className="inline-flex items-center gap-2 rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-ink hover:border-accent disabled:opacity-60"
+            className="control-button"
           >
             <Check className="h-4 w-4" aria-hidden />
             Compare / 对比
@@ -511,7 +530,7 @@ function ShadowComparisonPanel({
 function DiagnosticsPanel({ diagnostics }: { diagnostics: RunDiagnostics }) {
   const traceEntries = Object.entries(diagnostics.trace_counts);
   return (
-    <div className="rounded-md border border-line bg-white p-5 shadow-sm">
+    <div className="surface p-5">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h2 className="text-sm font-semibold text-ink">Diagnostics / 诊断</h2>
@@ -521,7 +540,7 @@ function DiagnosticsPanel({ diagnostics }: { diagnostics: RunDiagnostics }) {
             {diagnostics.shadow_mode ? "shadow / 影子" : "live / 正式"}
           </p>
         </div>
-        <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">{diagnostics.status}</span>
+        <span className={`status-pill ${runStatusClass(diagnostics.status)}`}>{diagnostics.status}</span>
       </div>
       {diagnostics.failure ? (
         <dl className="mt-3 grid gap-2 text-sm">
@@ -578,4 +597,30 @@ function DiagnosticsPanel({ diagnostics }: { diagnostics: RunDiagnostics }) {
       ) : null}
     </div>
   );
+}
+
+function RunFact({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-line bg-field px-3 py-2">
+      <p className="text-xs font-medium uppercase text-slate-500">{label}</p>
+      <p className="mt-1 truncate text-sm font-semibold text-ink">{value}</p>
+    </div>
+  );
+}
+
+function runStatusClass(status: string) {
+  switch (status) {
+    case "completed":
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    case "failed":
+    case "rejected":
+    case "canceled":
+      return "border-red-200 bg-red-50 text-red-700";
+    case "paused":
+      return "border-amber-200 bg-amber-50 text-amber-700";
+    case "running":
+      return "border-[#b7d7dc] bg-[#e6f1f3] text-accent";
+    default:
+      return "border-line bg-field text-slate-700";
+  }
 }
