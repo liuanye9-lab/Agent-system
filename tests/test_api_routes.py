@@ -1503,7 +1503,9 @@ def test_api_repository_snapshot_export_and_import_restore_repository_state() ->
 
         assert dry_run.status_code == 200
         assert dry_run.json()["dry_run"] is True
-        assert dry_run.json()["report"]["runs_to_import"] == 1
+        assert dry_run.json()["report"]["runs_imported"] == 1
+        assert dry_run.json()["report"]["eval_results_imported"] == 1
+        assert dry_run.json()["report"]["eval_results_skipped"] == 0
         assert target_repository.get_workflow("new-product-launch") is None
         assert missing_confirm.status_code == 422
 

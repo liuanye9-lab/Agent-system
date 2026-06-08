@@ -5,6 +5,7 @@ from .snapshot import (
     SnapshotImportReport,
     export_repository_snapshot,
     import_repository_snapshot,
+    preview_repository_snapshot_import,
 )
 
 __all__ = [
@@ -19,5 +20,6 @@ __all__ = [
     "build_retention_report",
     "export_repository_snapshot",
     "import_repository_snapshot",
+    "preview_repository_snapshot_import",
     "run_preflight",
 ]

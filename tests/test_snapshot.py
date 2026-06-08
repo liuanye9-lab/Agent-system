@@ -8,6 +8,7 @@ from packages.workflow_core.models.enums import WorkflowRunStatus
 from packages.workflow_core.ops.snapshot import (
     export_repository_snapshot,
     import_repository_snapshot,
+    preview_repository_snapshot_import,
     snapshot_from_file,
     snapshot_to_file,
 )
@@ -98,6 +99,21 @@ def test_repository_snapshot_import_skips_existing_eval_results() -> None:
 
     assert report.eval_results_imported == 0
     assert report.eval_results_skipped == 1
+    assert len(target.list_eval_results("new-product-launch")) == 1
+
+
+def test_repository_snapshot_import_preview_matches_skip_policy_without_writing() -> None:
+    target = populated_repository()
+    snapshot = export_repository_snapshot(target)
+
+    preview = preview_repository_snapshot_import(target, snapshot)
+
+    assert preview.current_workflows_imported == 1
+    assert preview.workflow_versions_imported == 2
+    assert preview.runs_imported == 1
+    assert preview.eval_results_imported == 0
+    assert preview.eval_results_skipped == 1
+    assert preview.audit_events_imported == 1
     assert len(target.list_eval_results("new-product-launch")) == 1
 
 

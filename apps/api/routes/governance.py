@@ -24,6 +24,7 @@ from packages.workflow_core.ops import (
     build_retention_report,
     export_repository_snapshot,
     import_repository_snapshot,
+    preview_repository_snapshot_import,
 )
 from packages.workflow_core.storage import WorkflowRepository
 
@@ -454,6 +455,23 @@ def import_snapshot(
         )
         raise HTTPException(status_code=422, detail="reason is required when dry_run is false")
     if request.dry_run:
+        try:
+            report = preview_repository_snapshot_import(
+                repository,
+                request.snapshot,
+                skip_existing_eval_results=request.skip_existing_eval_results,
+            )
+        except ValueError as exc:
+            _save_snapshot_audit_event(
+                repository=repository,
+                actor=actor,
+                action="import_preview",
+                status="failed",
+                workflow_id=request.snapshot.workflow_id,
+                reason=request.reason,
+                details={"gate": "snapshot_schema", "message": str(exc), "summary": summary},
+            )
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
         _save_snapshot_audit_event(
             repository=repository,
             actor=actor,
@@ -465,19 +483,13 @@ def import_snapshot(
                 "dry_run": True,
                 "skip_existing_eval_results": request.skip_existing_eval_results,
                 "summary": summary,
+                "report": dump_model(report),
             },
         )
         return {
             "dry_run": True,
             "summary": summary,
-            "report": {
-                "schema_version": request.snapshot.schema_version,
-                "current_workflows_to_import": summary["current_workflow_count"],
-                "workflow_versions_to_import": summary["workflow_version_count"],
-                "runs_to_import": summary["run_count"],
-                "eval_results_to_import": summary["eval_result_count"],
-                "audit_events_to_import": summary["audit_event_count"],
-            },
+            "report": dump_model(report),
         }
 
     try:

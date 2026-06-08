@@ -127,7 +127,7 @@ Operators can also use the Governance console Recovery Snapshot panel, backed by
 - `GET /api/governance/snapshot`
 - `POST /api/governance/snapshot/import`
 
-Snapshot export requires a `workflow-admin` actor with `workflow:write`. Import defaults to dry run; a real restore requires `confirm_import`, an operator reason, and the same admin role. Snapshot audit events store counts and options only, not the raw snapshot body.
+Snapshot export requires a `workflow-admin` actor with `workflow:write`. Import defaults to dry run; the dry-run report is computed against the target repository so duplicate eval-result skips are visible before restore. A real restore requires `confirm_import`, an operator reason, and the same admin role. Snapshot audit events store counts and options only, not the raw snapshot body.
 
 Build a low-sensitive retention report before cleanup windows:
 

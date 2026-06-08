@@ -88,17 +88,18 @@ def import_repository_snapshot(
     if snapshot.schema_version != SNAPSHOT_SCHEMA_VERSION:
         raise ValueError(f"unsupported snapshot schema version: {snapshot.schema_version}")
 
-    report = SnapshotImportReport(schema_version=snapshot.schema_version)
+    report = preview_repository_snapshot_import(
+        repository,
+        snapshot,
+        skip_existing_eval_results=skip_existing_eval_results,
+    )
 
     for workflow in snapshot.workflow_versions:
         repository.save_workflow_version(workflow)
-        report.workflow_versions_imported += 1
     for workflow in snapshot.current_workflows:
         repository.save_workflow(workflow)
-        report.current_workflows_imported += 1
     for run in snapshot.runs:
         repository.save_run(run)
-        report.runs_imported += 1
 
     existing_eval_ids = {
         (result.workflow_id, result.eval_id)
@@ -107,17 +108,41 @@ def import_repository_snapshot(
     results_by_workflow_id: dict[str, list[EvalResult]] = defaultdict(list)
     for result in snapshot.eval_results:
         if (result.workflow_id, result.eval_id) in existing_eval_ids:
-            report.eval_results_skipped += 1
             continue
         results_by_workflow_id[result.workflow_id].append(result)
     for workflow_id, results in results_by_workflow_id.items():
         repository.save_eval_results(workflow_id, results)
-        report.eval_results_imported += len(results)
 
     for event in snapshot.audit_events:
         repository.save_audit_event(event)
-        report.audit_events_imported += 1
 
+    return report
+
+
+def preview_repository_snapshot_import(
+    repository: WorkflowRepository,
+    snapshot: RepositorySnapshot,
+    skip_existing_eval_results: bool = True,
+) -> SnapshotImportReport:
+    if snapshot.schema_version != SNAPSHOT_SCHEMA_VERSION:
+        raise ValueError(f"unsupported snapshot schema version: {snapshot.schema_version}")
+
+    report = SnapshotImportReport(
+        schema_version=snapshot.schema_version,
+        current_workflows_imported=len(snapshot.current_workflows),
+        workflow_versions_imported=len(snapshot.workflow_versions),
+        runs_imported=len(snapshot.runs),
+        audit_events_imported=len(snapshot.audit_events),
+    )
+    existing_eval_ids = {
+        (result.workflow_id, result.eval_id)
+        for result in repository.list_eval_results()
+    } if skip_existing_eval_results else set()
+    for result in snapshot.eval_results:
+        if (result.workflow_id, result.eval_id) in existing_eval_ids:
+            report.eval_results_skipped += 1
+            continue
+        report.eval_results_imported += 1
     return report
 
 
