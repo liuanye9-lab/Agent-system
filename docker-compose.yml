@@ -1,0 +1,39 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      AGENT_WORKFLOW_DATABASE_URL: sqlite:////data/agent_workflow_builder.sqlite3
+      AGENT_WORKFLOW_AUTH_SECRET_KEY: ${AGENT_WORKFLOW_AUTH_SECRET_KEY:-local-dev-change-me}
+      AGENT_WORKFLOW_AUTH_TOKEN_TTL_SECONDS: ${AGENT_WORKFLOW_AUTH_TOKEN_TTL_SECONDS:-3600}
+      AGENT_WORKFLOW_ALLOW_DEV_ACTOR_HEADERS: ${AGENT_WORKFLOW_ALLOW_DEV_ACTOR_HEADERS:-true}
+      AGENT_WORKFLOW_AUTH_USERS_JSON: ${AGENT_WORKFLOW_AUTH_USERS_JSON:-}
+      AGENT_WORKFLOW_SEED_EXAMPLE_WORKFLOW: ${AGENT_WORKFLOW_SEED_EXAMPLE_WORKFLOW:-true}
+      AGENT_WORKFLOW_RUN_RETENTION_DAYS: ${AGENT_WORKFLOW_RUN_RETENTION_DAYS:-90}
+      AGENT_WORKFLOW_EVAL_RETENTION_DAYS: ${AGENT_WORKFLOW_EVAL_RETENTION_DAYS:-365}
+      AGENT_WORKFLOW_AUDIT_RETENTION_DAYS: ${AGENT_WORKFLOW_AUDIT_RETENTION_DAYS:-365}
+      AGENT_WORKFLOW_LLM_PROVIDER: ${AGENT_WORKFLOW_LLM_PROVIDER:-mock}
+      AGENT_WORKFLOW_LLM_ENDPOINT: ${AGENT_WORKFLOW_LLM_ENDPOINT:-}
+      AGENT_WORKFLOW_LLM_MODEL: ${AGENT_WORKFLOW_LLM_MODEL:-}
+      AGENT_WORKFLOW_LLM_API_KEY: ${AGENT_WORKFLOW_LLM_API_KEY:-}
+      AGENT_WORKFLOW_LLM_TIMEOUT_SECONDS: ${AGENT_WORKFLOW_LLM_TIMEOUT_SECONDS:-30}
+    volumes:
+      - agent_workflow_data:/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ready', timeout=3).read()",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  agent_workflow_data:

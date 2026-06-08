@@ -1,0 +1,173 @@
+{
+  "workflow_id": "new-product-launch",
+  "name": "新品上市流程智能体",
+  "version": "0.1.0",
+  "problem_spec": {
+    "id": "new-product-launch-problem",
+    "title": "新品上市流程智能体",
+    "description": "把新品上市 know-how 编译成可运行、可评估、可优化的 Agent 工作流。",
+    "target_users": ["产品经理", "市场负责人", "渠道负责人", "业务审批人"],
+    "business_goal": "减少新品上市跨角色交接的信息损耗，沉淀可复用流程资产。",
+    "start_event": "业务方提交新品上市任务。",
+    "end_state": "完成 Go / No-Go 决策并留下 trace、eval 和优化建议。",
+    "success_metrics": ["字段完整率提升", "返工次数下降", "审批风险可追踪"],
+    "constraints": ["MVP 只使用 mock LLM 和 mock tools", "写操作必须审批"],
+    "risks": ["市场洞察不足", "定价假设不完整", "写操作绕过审批"],
+    "human_roles": ["产品经理", "市场负责人", "渠道负责人", "财务负责人", "业务审批人"],
+    "created_at": "2026-06-08T00:00:00Z",
+    "updated_at": "2026-06-08T00:00:00Z"
+  },
+  "process_spec": {
+    "id": "new-product-launch-process",
+    "workflow_id": "new-product-launch",
+    "entry_node_id": "define-launch-goal",
+    "terminal_node_ids": ["go-no-go-decision"],
+    "version": "0.1.0",
+    "nodes": [
+      {
+        "node_id": "define-launch-goal",
+        "name": "定义上市目标",
+        "node_type": "reasoning_node",
+        "owner_role": "产品经理",
+        "description": "明确新品上市目标、目标市场、核心成功指标和约束。",
+        "done_condition": "上市目标、目标用户、成功指标和关键约束完整。",
+        "requires_approval": false,
+        "input_contract_id": "contract-define-launch-goal",
+        "output_contract_id": "contract-define-launch-goal",
+        "tool_ids": ["mock-define-launch-goal-tool"]
+      },
+      {
+        "node_id": "collect-market-insights",
+        "name": "收集市场洞察",
+        "node_type": "read_node",
+        "owner_role": "市场负责人",
+        "description": "汇总市场、竞品、用户需求和渠道信号。",
+        "done_condition": "洞察摘要覆盖目标市场、竞品和用户痛点。",
+        "requires_approval": false,
+        "input_contract_id": "contract-collect-market-insights",
+        "output_contract_id": "contract-collect-market-insights",
+        "tool_ids": ["mock-collect-market-insights-tool"]
+      },
+      {
+        "node_id": "product-positioning",
+        "name": "产品定位",
+        "node_type": "reasoning_node",
+        "owner_role": "产品营销",
+        "description": "生成目标人群、差异化卖点、价值主张和叙事。",
+        "done_condition": "定位陈述、主卖点和风险假设通过校验。",
+        "requires_approval": false,
+        "input_contract_id": "contract-product-positioning",
+        "output_contract_id": "contract-product-positioning",
+        "tool_ids": ["mock-product-positioning-tool"]
+      },
+      {
+        "node_id": "channel-pricing",
+        "name": "渠道定价",
+        "node_type": "reasoning_node",
+        "owner_role": "渠道负责人",
+        "description": "生成渠道策略、价格区间、促销限制和毛利假设。",
+        "done_condition": "渠道策略与价格建议包含依据和风险。",
+        "requires_approval": false,
+        "input_contract_id": "contract-channel-pricing",
+        "output_contract_id": "contract-channel-pricing",
+        "tool_ids": ["mock-channel-pricing-tool"]
+      },
+      {
+        "node_id": "business-case",
+        "name": "商业论证",
+        "node_type": "review_node",
+        "owner_role": "财务与业务负责人",
+        "description": "审查目标、洞察、定位、定价是否支撑商业论证。",
+        "done_condition": "商业论证给出通过、打回或补充材料结论。",
+        "requires_approval": true,
+        "input_contract_id": "contract-business-case",
+        "output_contract_id": "contract-business-case",
+        "tool_ids": ["mock-business-case-tool"]
+      },
+      {
+        "node_id": "global-launch-check",
+        "name": "全球操盘检查",
+        "node_type": "read_node",
+        "owner_role": "全球运营",
+        "description": "检查区域、本地化、合规、库存、支持与上市节奏。",
+        "done_condition": "全球上市检查清单无阻断项或已标注风险。",
+        "requires_approval": false,
+        "input_contract_id": "contract-global-launch-check",
+        "output_contract_id": "contract-global-launch-check",
+        "tool_ids": ["mock-global-launch-check-tool"]
+      },
+      {
+        "node_id": "go-no-go-decision",
+        "name": "Go / No-Go 决策",
+        "node_type": "write_node",
+        "owner_role": "业务审批人",
+        "description": "生成决策草稿并等待人工审批后才允许写入外部系统。",
+        "done_condition": "Go / No-Go 决策完成审批并产出审计记录。",
+        "requires_approval": true,
+        "input_contract_id": "contract-go-no-go-decision",
+        "output_contract_id": "contract-go-no-go-decision",
+        "tool_ids": ["mock-go-no-go-decision-tool"]
+      }
+    ],
+    "edges": [
+      {"source_node_id": "define-launch-goal", "target_node_id": "collect-market-insights", "condition": null, "edge_type": "default"},
+      {"source_node_id": "collect-market-insights", "target_node_id": "product-positioning", "condition": null, "edge_type": "default"},
+      {"source_node_id": "product-positioning", "target_node_id": "channel-pricing", "condition": null, "edge_type": "default"},
+      {"source_node_id": "channel-pricing", "target_node_id": "business-case", "condition": null, "edge_type": "default"},
+      {"source_node_id": "business-case", "target_node_id": "product-positioning", "condition": "商业论证不通过，打回定位修正", "edge_type": "reject"},
+      {"source_node_id": "business-case", "target_node_id": "global-launch-check", "condition": "商业论证通过", "edge_type": "conditional"},
+      {"source_node_id": "global-launch-check", "target_node_id": "go-no-go-decision", "condition": null, "edge_type": "default"}
+    ]
+  },
+  "data_contracts": [
+    {"contract_id": "contract-define-launch-goal", "name": "定义上市目标 数据契约", "description": "定义上市目标节点的输入输出结构。", "input_schema": {"type": "object"}, "output_schema": {"type": "object"}, "required_fields": ["context", "summary", "next_actions"], "validation_rules": ["context 必须存在", "summary 不能为空"], "error_policy": "缺少关键字段时暂停并记录 trace。", "example_input": {"context": {"product": "AI workflow platform"}}, "example_output": {"summary": "目标已定义", "decision": "continue", "risks": [], "next_actions": ["收集市场洞察"]}},
+    {"contract_id": "contract-collect-market-insights", "name": "收集市场洞察 数据契约", "description": "收集市场洞察节点的输入输出结构。", "input_schema": {"type": "object"}, "output_schema": {"type": "object"}, "required_fields": ["context", "summary", "next_actions"], "validation_rules": ["必须包含竞品或用户信号"], "error_policy": "洞察不足时打回补充。", "example_input": {"context": {"market": "global"}}, "example_output": {"summary": "市场洞察已汇总", "decision": "continue", "risks": [], "next_actions": ["产品定位"]}},
+    {"contract_id": "contract-product-positioning", "name": "产品定位 数据契约", "description": "产品定位节点的输入输出结构。", "input_schema": {"type": "object"}, "output_schema": {"type": "object"}, "required_fields": ["context", "summary", "next_actions"], "validation_rules": ["必须包含目标人群和差异化卖点"], "error_policy": "定位缺失时回退到市场洞察节点。", "example_input": {"context": {"insights": []}}, "example_output": {"summary": "定位已生成", "decision": "continue", "risks": ["定位假设需验证"], "next_actions": ["渠道定价"]}},
+    {"contract_id": "contract-channel-pricing", "name": "渠道定价 数据契约", "description": "渠道定价节点的输入输出结构。", "input_schema": {"type": "object"}, "output_schema": {"type": "object"}, "required_fields": ["context", "summary", "next_actions"], "validation_rules": ["必须包含价格依据和渠道限制"], "error_policy": "价格依据不足时要求人工补充。", "example_input": {"context": {"positioning": "draft"}}, "example_output": {"summary": "定价建议已生成", "decision": "continue", "risks": ["毛利假设需复核"], "next_actions": ["商业论证"]}},
+    {"contract_id": "contract-business-case", "name": "商业论证 数据契约", "description": "商业论证 review 节点的输入输出结构。", "input_schema": {"type": "object"}, "output_schema": {"type": "object"}, "required_fields": ["context", "summary", "decision"], "validation_rules": ["必须输出 continue 或 rework"], "error_policy": "商业论证不通过时打回产品定位。", "example_input": {"context": {"pricing": "draft"}}, "example_output": {"summary": "商业论证通过", "decision": "continue", "risks": [], "next_actions": ["全球操盘检查"]}},
+    {"contract_id": "contract-global-launch-check", "name": "全球操盘检查 数据契约", "description": "全球操盘检查节点的输入输出结构。", "input_schema": {"type": "object"}, "output_schema": {"type": "object"}, "required_fields": ["context", "summary", "next_actions"], "validation_rules": ["必须列出阻断项"], "error_policy": "出现阻断项时暂停并请求人工判断。", "example_input": {"context": {"business_case": "passed"}}, "example_output": {"summary": "全球检查完成", "decision": "continue", "risks": [], "next_actions": ["Go / No-Go 决策"]}},
+    {"contract_id": "contract-go-no-go-decision", "name": "Go / No-Go 决策 数据契约", "description": "写节点的决策草稿和审批输出结构。", "input_schema": {"type": "object"}, "output_schema": {"type": "object"}, "required_fields": ["context", "summary", "decision"], "validation_rules": ["写操作必须 approval_required"], "error_policy": "审批未完成时不得执行真实写操作。", "example_input": {"context": {"launch_check": "passed"}}, "example_output": {"summary": "等待人工审批", "decision": "pending_approval", "risks": ["write operation requires approval"], "next_actions": ["wait_for_human_approval"]}}
+  ],
+  "tool_policies": [
+    {"tool_id": "mock-define-launch-goal-tool", "name": "定义上市目标 Mock Tool", "description": "不访问真实外部系统。", "permission_level": "draft_only", "risk_level": "medium", "requires_approval": false, "allowed_roles": ["产品经理"], "input_schema": {"type": "object"}, "output_schema": {"type": "object"}},
+    {"tool_id": "mock-collect-market-insights-tool", "name": "收集市场洞察 Mock Tool", "description": "只读 mock 检索工具。", "permission_level": "read_only", "risk_level": "low", "requires_approval": false, "allowed_roles": ["市场负责人"], "input_schema": {"type": "object"}, "output_schema": {"type": "object"}},
+    {"tool_id": "mock-product-positioning-tool", "name": "产品定位 Mock Tool", "description": "草稿型 mock 工具。", "permission_level": "draft_only", "risk_level": "medium", "requires_approval": false, "allowed_roles": ["产品营销"], "input_schema": {"type": "object"}, "output_schema": {"type": "object"}},
+    {"tool_id": "mock-channel-pricing-tool", "name": "渠道定价 Mock Tool", "description": "草稿型 mock 工具。", "permission_level": "draft_only", "risk_level": "medium", "requires_approval": false, "allowed_roles": ["渠道负责人"], "input_schema": {"type": "object"}, "output_schema": {"type": "object"}},
+    {"tool_id": "mock-business-case-tool", "name": "商业论证 Mock Tool", "description": "review mock 工具。", "permission_level": "draft_only", "risk_level": "medium", "requires_approval": false, "allowed_roles": ["财务与业务负责人"], "input_schema": {"type": "object"}, "output_schema": {"type": "object"}},
+    {"tool_id": "mock-global-launch-check-tool", "name": "全球操盘检查 Mock Tool", "description": "只读 mock 检查工具。", "permission_level": "read_only", "risk_level": "low", "requires_approval": false, "allowed_roles": ["全球运营"], "input_schema": {"type": "object"}, "output_schema": {"type": "object"}},
+    {"tool_id": "mock-go-no-go-decision-tool", "name": "Go / No-Go 决策 Mock Tool", "description": "高风险写操作 mock 工具，必须审批。", "permission_level": "write_requires_approval", "risk_level": "high", "requires_approval": true, "allowed_roles": ["业务审批人", "business-approver", "workflow-admin"], "input_schema": {"type": "object"}, "output_schema": {"type": "object"}}
+  ],
+  "agent_specs": [
+    {"agent_id": "agent-define-launch-goal", "name": "定义上市目标 Agent", "role": "产品经理", "goal": "定义上市目标", "instructions": "输出必须通过 schema 校验。", "input_contract_id": "contract-define-launch-goal", "output_contract_id": "contract-define-launch-goal", "tools": ["mock-define-launch-goal-tool"], "guardrails": ["schema_validation_required", "mock_tools_only"], "model_config": {"provider": "mock", "model": "mock-llm-v1"}},
+    {"agent_id": "agent-collect-market-insights", "name": "收集市场洞察 Agent", "role": "市场负责人", "goal": "收集市场洞察", "instructions": "只允许只读 mock 工具。", "input_contract_id": "contract-collect-market-insights", "output_contract_id": "contract-collect-market-insights", "tools": ["mock-collect-market-insights-tool"], "guardrails": ["schema_validation_required", "read_only_tools"], "model_config": {"provider": "mock", "model": "mock-llm-v1"}},
+    {"agent_id": "agent-product-positioning", "name": "产品定位 Agent", "role": "产品营销", "goal": "生成产品定位", "instructions": "输出必须包含 summary 和 next_actions。", "input_contract_id": "contract-product-positioning", "output_contract_id": "contract-product-positioning", "tools": ["mock-product-positioning-tool"], "guardrails": ["schema_validation_required"], "model_config": {"provider": "mock", "model": "mock-llm-v1"}},
+    {"agent_id": "agent-channel-pricing", "name": "渠道定价 Agent", "role": "渠道负责人", "goal": "生成渠道定价建议", "instructions": "输出必须列出价格依据和风险。", "input_contract_id": "contract-channel-pricing", "output_contract_id": "contract-channel-pricing", "tools": ["mock-channel-pricing-tool"], "guardrails": ["schema_validation_required"], "model_config": {"provider": "mock", "model": "mock-llm-v1"}},
+    {"agent_id": "agent-business-case", "name": "商业论证 Agent", "role": "财务与业务负责人", "goal": "审查商业论证", "instructions": "必须挑刺并输出 continue 或 rework。", "input_contract_id": "contract-business-case", "output_contract_id": "contract-business-case", "tools": ["mock-business-case-tool"], "guardrails": ["schema_validation_required", "review_required"], "model_config": {"provider": "mock", "model": "mock-llm-v1"}},
+    {"agent_id": "agent-global-launch-check", "name": "全球操盘检查 Agent", "role": "全球运营", "goal": "检查上市阻断项", "instructions": "只读检查，不得写外部系统。", "input_contract_id": "contract-global-launch-check", "output_contract_id": "contract-global-launch-check", "tools": ["mock-global-launch-check-tool"], "guardrails": ["schema_validation_required", "read_only_tools"], "model_config": {"provider": "mock", "model": "mock-llm-v1"}},
+    {"agent_id": "agent-go-no-go-decision", "name": "Go / No-Go 决策 Agent", "role": "业务审批人", "goal": "生成决策草稿并等待审批", "instructions": "写操作必须暂停等待人工审批。", "input_contract_id": "contract-go-no-go-decision", "output_contract_id": "contract-go-no-go-decision", "tools": ["mock-go-no-go-decision-tool"], "guardrails": ["schema_validation_required", "approval_required_for_write"], "model_config": {"provider": "mock", "model": "mock-llm-v1"}}
+  ],
+  "eval_specs": [
+    {
+      "eval_id": "new-product-launch-golden-case-001",
+      "workflow_id": "new-product-launch",
+      "name": "新品上市端到端 golden case",
+      "eval_type": "end_to_end",
+      "target_node_id": null,
+      "input_case": {"product": "AI workflow platform", "market": "global"},
+      "expected_output": {"status": "completed_or_paused_for_approval"},
+      "scoring_rules": ["必须产生 trace", "写节点必须要求审批", "最终输出必须包含 next_actions"]
+    },
+    {
+      "eval_id": "new-product-launch-node-review-001",
+      "workflow_id": "new-product-launch",
+      "name": "商业论证节点评测",
+      "eval_type": "node",
+      "target_node_id": "business-case",
+      "input_case": {"context": {"positioning": "clear", "pricing": "draft"}},
+      "expected_output": {"decision": "continue_or_rework", "risks": []},
+      "scoring_rules": ["review_node 必须输出 decision", "风险必须显式列出"]
+    }
+  ],
+  "created_at": "2026-06-08T00:00:00Z",
+  "updated_at": "2026-06-08T00:00:00Z"
+}

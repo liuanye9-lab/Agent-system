@@ -1,0 +1,19 @@
+{
+  "name": "agent-system",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "npm@11.13.0",
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "build": "npm --workspace agent-workflow-builder-web run build",
+    "lint": "npm --workspace agent-workflow-builder-web run lint"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "overrides": {
+    "postcss": "8.5.15"
+  }
+}
