@@ -2062,7 +2062,22 @@ def test_api_validate_and_import_reject_quality_gate_errors() -> None:
         payload = load_example_payload()
         payload["eval_specs"] = []
 
-        validation = client.post("/api/workflows/validate", json=payload)
+        read_only_actor = ActorContext(
+            actor_id="read-only-1",
+            role="workflow-admin",
+            scopes=["workflow:read"],
+        )
+        anonymous_validation = client.post("/api/workflows/validate", json=payload)
+        forbidden_validation = client.post(
+            "/api/workflows/validate",
+            headers=actor_token_headers(read_only_actor),
+            json=payload,
+        )
+        validation = client.post("/api/workflows/validate", headers=admin_headers(client), json=payload)
+
+        assert anonymous_validation.status_code == 401
+        assert forbidden_validation.status_code == 403
+        assert forbidden_validation.json()["detail"]["required_scope"] == "workflow:write"
         assert validation.status_code == 200
         assert validation.json()["valid"] is False
         assert validation.json()["errors"][0]["code"] == "missing_eval_specs"

@@ -231,6 +231,7 @@ Import/export a workflow package:
 ```bash
 curl -X POST http://127.0.0.1:8000/api/workflows/validate \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer {token}" \
   --data @examples/new_product_launch.workflow.json
 
 curl -X POST http://127.0.0.1:8000/api/workflows/import \

@@ -159,6 +159,7 @@ export default function NewWorkflowPage() {
       }
       const response = await apiFetch<PackageOperationResponse>("/api/workflows/validate", {
         method: "POST",
+        headers: await getLocalAuthHeaders("workflow-admin"),
         body: JSON.stringify(payload)
       });
       setPackageResult(response);

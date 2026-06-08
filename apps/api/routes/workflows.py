@@ -865,7 +865,10 @@ def import_workflow(
 
 
 @router.post("/validate")
-def validate_workflow_package(payload: dict[str, Any]) -> dict[str, Any]:
+def validate_workflow_package(
+    payload: dict[str, Any],
+    _actor: ActorContext = Depends(require_scope("workflow:write")),
+) -> dict[str, Any]:
     try:
         workflow_package = WorkflowPackage.model_validate(payload)
     except ValidationError as exc:

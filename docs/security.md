@@ -33,7 +33,7 @@ LLM configuration must come from environment variables. `/ready` may report prov
 
 Candidate workflow versions may be generated or imported without changing the current version. Candidate creation still requires `workflow:write`, requires an existing current workflow, and must be followed by the promotion gate before it affects default live execution.
 
-Package import UI should parse pasted JSON locally before calling the API, use `POST /api/workflows/validate` for preflight checks, and call `POST /api/workflows/import` only with an actor that has `workflow:write`. Validation responses are not proof of persistence; only successful import responses should link into version review.
+Package import UI should parse pasted JSON locally before calling the API, use `POST /api/workflows/validate` for authenticated preflight checks, and call `POST /api/workflows/import` only with an actor that has `workflow:write`. Validation responses are not proof of persistence; only successful import responses should link into version review.
 
 Candidate review UI may display package diffs to actors with `workflow:read`, but it must not use run input payloads, trace snapshots, actor tokens, or idempotency keys as diff material.
 
