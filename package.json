@@ -8,7 +8,8 @@
   ],
   "scripts": {
     "build": "npm --workspace agent-workflow-builder-web run build",
-    "lint": "npm --workspace agent-workflow-builder-web run lint"
+    "lint": "npm --workspace agent-workflow-builder-web run lint",
+    "typecheck": "npm --workspace agent-workflow-builder-web run typecheck"
   },
   "engines": {
     "node": ">=20"
