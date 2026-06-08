@@ -122,6 +122,13 @@ python tools/snapshot.py import snapshots/pre-release.json
 
 Snapshots include workflow packages, saved versions, workflow runs, trace payloads, eval results, and audit events. They may contain raw run payloads that HTTP responses normally redact, so store them with the same controls as database backups. The default `.gitignore` excludes `snapshots/`.
 
+Operators can also use the Governance console Recovery Snapshot panel, backed by:
+
+- `GET /api/governance/snapshot`
+- `POST /api/governance/snapshot/import`
+
+Snapshot export requires a `workflow-admin` actor with `workflow:write`. Import defaults to dry run; a real restore requires `confirm_import`, an operator reason, and the same admin role. Snapshot audit events store counts and options only, not the raw snapshot body.
+
 Build a low-sensitive retention report before cleanup windows:
 
 ```bash

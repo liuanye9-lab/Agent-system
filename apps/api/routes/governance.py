@@ -17,7 +17,14 @@ from apps.api.settings import settings
 from packages.workflow_core.governance import MetricCollector, OTLPTraceExporter, OTLPTraceExporterConfig, OptimizationLoop, TraceExportError
 from packages.workflow_core.models import ActorContext, WorkflowPackage
 from packages.workflow_core.models.enums import NodeExecutionStatus, PermissionLevel, RiskLevel, WorkflowRunStatus
-from packages.workflow_core.ops import RetentionPolicy, apply_retention_policy, build_retention_report
+from packages.workflow_core.ops import (
+    RepositorySnapshot,
+    RetentionPolicy,
+    apply_retention_policy,
+    build_retention_report,
+    export_repository_snapshot,
+    import_repository_snapshot,
+)
 from packages.workflow_core.storage import WorkflowRepository
 
 router = APIRouter(prefix="/api/governance", tags=["governance"])
@@ -61,6 +68,14 @@ class RetentionApplyRequest(BaseModel):
     dry_run: bool = True
     confirm_apply: bool = False
     snapshot_acknowledged: bool = False
+    reason: str | None = Field(default=None, min_length=1, max_length=500)
+
+
+class SnapshotImportRequest(BaseModel):
+    snapshot: RepositorySnapshot
+    dry_run: bool = True
+    confirm_import: bool = False
+    skip_existing_eval_results: bool = True
     reason: str | None = Field(default=None, min_length=1, max_length=500)
 
 
@@ -342,6 +357,168 @@ def get_retention_report(
     return dump_model(report)
 
 
+@router.get("/snapshot")
+def export_snapshot(
+    workflow_id: str | None = None,
+    include_runs: bool = True,
+    include_eval_results: bool = True,
+    include_audit_events: bool = True,
+    actor: ActorContext = Depends(require_scope("workflow:write")),
+    repository: WorkflowRepository = Depends(get_repository),
+) -> dict[str, Any]:
+    if actor.role != "workflow-admin":
+        _save_snapshot_audit_event(
+            repository=repository,
+            actor=actor,
+            action="export",
+            status="failed",
+            workflow_id=workflow_id,
+            reason=None,
+            details={
+                "gate": "role",
+                "message": "only workflow-admin can export repository snapshots",
+                "actor_role": actor.role,
+            },
+        )
+        raise HTTPException(status_code=403, detail="only workflow-admin can export repository snapshots")
+    snapshot = export_repository_snapshot(
+        repository,
+        workflow_id=workflow_id,
+        include_runs=include_runs,
+        include_eval_results=include_eval_results,
+        include_audit_events=include_audit_events,
+    )
+    _save_snapshot_audit_event(
+        repository=repository,
+        actor=actor,
+        action="export",
+        status="succeeded",
+        workflow_id=workflow_id,
+        reason=None,
+        details={
+            "summary": snapshot.summary(),
+            "include_runs": include_runs,
+            "include_eval_results": include_eval_results,
+            "include_audit_events": include_audit_events,
+        },
+    )
+    return {
+        "snapshot": dump_model(snapshot),
+        "summary": snapshot.summary(),
+    }
+
+
+@router.post("/snapshot/import")
+def import_snapshot(
+    request: SnapshotImportRequest,
+    actor: ActorContext = Depends(require_scope("workflow:write")),
+    repository: WorkflowRepository = Depends(get_repository),
+) -> dict[str, Any]:
+    summary = request.snapshot.summary()
+    if not request.dry_run and not request.confirm_import:
+        _save_snapshot_audit_event(
+            repository=repository,
+            actor=actor,
+            action="import",
+            status="failed",
+            workflow_id=request.snapshot.workflow_id,
+            reason=request.reason,
+            details={"gate": "confirm_import", "message": "confirm_import is required when dry_run is false", "summary": summary},
+        )
+        raise HTTPException(status_code=422, detail="confirm_import is required when dry_run is false")
+    if not request.dry_run and actor.role != "workflow-admin":
+        _save_snapshot_audit_event(
+            repository=repository,
+            actor=actor,
+            action="import",
+            status="failed",
+            workflow_id=request.snapshot.workflow_id,
+            reason=request.reason,
+            details={
+                "gate": "role",
+                "message": "only workflow-admin can import repository snapshots",
+                "actor_role": actor.role,
+                "summary": summary,
+            },
+        )
+        raise HTTPException(status_code=403, detail="only workflow-admin can import repository snapshots")
+    if not request.dry_run and not request.reason:
+        _save_snapshot_audit_event(
+            repository=repository,
+            actor=actor,
+            action="import",
+            status="failed",
+            workflow_id=request.snapshot.workflow_id,
+            reason=request.reason,
+            details={"gate": "reason", "message": "reason is required when dry_run is false", "summary": summary},
+        )
+        raise HTTPException(status_code=422, detail="reason is required when dry_run is false")
+    if request.dry_run:
+        _save_snapshot_audit_event(
+            repository=repository,
+            actor=actor,
+            action="import_preview",
+            status="succeeded",
+            workflow_id=request.snapshot.workflow_id,
+            reason=request.reason,
+            details={
+                "dry_run": True,
+                "skip_existing_eval_results": request.skip_existing_eval_results,
+                "summary": summary,
+            },
+        )
+        return {
+            "dry_run": True,
+            "summary": summary,
+            "report": {
+                "schema_version": request.snapshot.schema_version,
+                "current_workflows_to_import": summary["current_workflow_count"],
+                "workflow_versions_to_import": summary["workflow_version_count"],
+                "runs_to_import": summary["run_count"],
+                "eval_results_to_import": summary["eval_result_count"],
+                "audit_events_to_import": summary["audit_event_count"],
+            },
+        }
+
+    try:
+        report = import_repository_snapshot(
+            repository,
+            request.snapshot,
+            skip_existing_eval_results=request.skip_existing_eval_results,
+        )
+    except ValueError as exc:
+        _save_snapshot_audit_event(
+            repository=repository,
+            actor=actor,
+            action="import",
+            status="failed",
+            workflow_id=request.snapshot.workflow_id,
+            reason=request.reason,
+            details={"gate": "snapshot_schema", "message": str(exc), "summary": summary},
+        )
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    _save_snapshot_audit_event(
+        repository=repository,
+        actor=actor,
+        action="import",
+        status="succeeded",
+        workflow_id=request.snapshot.workflow_id,
+        reason=request.reason,
+        details={
+            "dry_run": False,
+            "confirm_import": request.confirm_import,
+            "skip_existing_eval_results": request.skip_existing_eval_results,
+            "summary": summary,
+            "report": dump_model(report),
+        },
+    )
+    return {
+        "dry_run": False,
+        "summary": summary,
+        "report": dump_model(report),
+    }
+
+
 @router.post("/retention-apply")
 def apply_retention(
     request: RetentionApplyRequest,
@@ -435,6 +612,31 @@ def apply_retention(
         },
     )
     return dump_model(report)
+
+
+def _save_snapshot_audit_event(
+    *,
+    repository: WorkflowRepository,
+    actor: ActorContext,
+    action: str,
+    status: str,
+    workflow_id: str | None,
+    reason: str | None,
+    details: dict[str, Any],
+) -> None:
+    repository.save_audit_event(
+        build_audit_event(
+            event_type="repository_snapshot",
+            action=action,
+            status=status,
+            actor=actor,
+            workflow_id=workflow_id,
+            resource_type="repository_snapshot",
+            resource_id=workflow_id or "all-workflows",
+            reason=reason,
+            details=details,
+        )
+    )
 
 
 def _save_retention_apply_audit_event(

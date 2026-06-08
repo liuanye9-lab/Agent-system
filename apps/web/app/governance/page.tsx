@@ -194,6 +194,27 @@ type RetentionApplyResult = {
   retention_report: RetentionReport;
 };
 
+type SnapshotSummary = {
+  schema_version: string;
+  workflow_id?: string | null;
+  current_workflow_count: number;
+  workflow_version_count: number;
+  run_count: number;
+  eval_result_count: number;
+  audit_event_count: number;
+};
+
+type SnapshotExportResult = {
+  snapshot: unknown;
+  summary: SnapshotSummary;
+};
+
+type SnapshotImportResult = {
+  dry_run: boolean;
+  summary: SnapshotSummary;
+  report: Record<string, unknown>;
+};
+
 type RepairOperation = {
   operation_id: string;
   target_type: string;
@@ -263,6 +284,17 @@ export default function GovernancePage() {
   const [retentionApplying, setRetentionApplying] = useState(false);
   const [retentionApplyResult, setRetentionApplyResult] = useState<RetentionApplyResult | null>(null);
   const [retentionApplyError, setRetentionApplyError] = useState<string | null>(null);
+  const [snapshotText, setSnapshotText] = useState("");
+  const [snapshotIncludeRuns, setSnapshotIncludeRuns] = useState(true);
+  const [snapshotIncludeEvalResults, setSnapshotIncludeEvalResults] = useState(true);
+  const [snapshotIncludeAuditEvents, setSnapshotIncludeAuditEvents] = useState(true);
+  const [snapshotExportResult, setSnapshotExportResult] = useState<SnapshotExportResult | null>(null);
+  const [snapshotImportResult, setSnapshotImportResult] = useState<SnapshotImportResult | null>(null);
+  const [snapshotReason, setSnapshotReason] = useState("");
+  const [snapshotConfirmImport, setSnapshotConfirmImport] = useState(false);
+  const [snapshotSkipExistingEvalResults, setSnapshotSkipExistingEvalResults] = useState(true);
+  const [snapshotBusy, setSnapshotBusy] = useState<"export" | "dry-run" | "import" | null>(null);
+  const [snapshotError, setSnapshotError] = useState<string | null>(null);
   const [riskReport, setRiskReport] = useState<RiskReport | null>(null);
   const [evalResults, setEvalResults] = useState<unknown[]>([]);
   const [suggestions, setSuggestions] = useState<unknown[]>([]);
@@ -332,6 +364,9 @@ export default function GovernancePage() {
         setRepairPreviewError(null);
         setRetentionApplyResult(null);
         setRetentionApplyError(null);
+        setSnapshotExportResult(null);
+        setSnapshotImportResult(null);
+        setSnapshotError(null);
       })
       .catch(() => null);
   }, [selectedWorkflowId]);
@@ -432,6 +467,69 @@ export default function GovernancePage() {
       setRetentionApplyError(caught instanceof Error ? caught.message : "Failed to apply retention / 应用保留策略失败");
     } finally {
       setRetentionApplying(false);
+    }
+  }
+
+  async function exportSnapshot() {
+    setSnapshotBusy("export");
+    setSnapshotError(null);
+    setSnapshotImportResult(null);
+    try {
+      const headers = await getLocalAuthHeaders("workflow-admin");
+      const query = new URLSearchParams({
+        include_runs: String(snapshotIncludeRuns),
+        include_eval_results: String(snapshotIncludeEvalResults),
+        include_audit_events: String(snapshotIncludeAuditEvents)
+      });
+      if (selectedWorkflowId) {
+        query.set("workflow_id", selectedWorkflowId);
+      }
+      const result = await apiFetch<SnapshotExportResult>(`/api/governance/snapshot?${query.toString()}`, { headers });
+      setSnapshotExportResult(result);
+      setSnapshotText(JSON.stringify(result.snapshot, null, 2));
+    } catch (caught) {
+      setSnapshotError(caught instanceof Error ? caught.message : "Failed to export snapshot / 导出快照失败");
+    } finally {
+      setSnapshotBusy(null);
+    }
+  }
+
+  async function importSnapshot(dryRun: boolean) {
+    let snapshot: unknown;
+    try {
+      snapshot = JSON.parse(snapshotText);
+    } catch {
+      setSnapshotError("Snapshot JSON must be valid JSON / 快照 JSON 必须有效");
+      return;
+    }
+    if (!snapshot || typeof snapshot !== "object" || Array.isArray(snapshot)) {
+      setSnapshotError("Snapshot JSON must be a JSON object / 快照 JSON 必须是对象");
+      return;
+    }
+    setSnapshotBusy(dryRun ? "dry-run" : "import");
+    setSnapshotError(null);
+    setSnapshotImportResult(null);
+    try {
+      const headers = await getLocalAuthHeaders("workflow-admin");
+      const result = await apiFetch<SnapshotImportResult>("/api/governance/snapshot/import", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          snapshot,
+          dry_run: dryRun,
+          confirm_import: !dryRun && snapshotConfirmImport,
+          skip_existing_eval_results: snapshotSkipExistingEvalResults,
+          reason: snapshotReason.trim() || undefined
+        })
+      });
+      setSnapshotImportResult(result);
+      if (!dryRun) {
+        setSnapshotConfirmImport(false);
+      }
+    } catch (caught) {
+      setSnapshotError(caught instanceof Error ? caught.message : "Failed to import snapshot / 导入快照失败");
+    } finally {
+      setSnapshotBusy(null);
     }
   }
 
@@ -798,6 +896,122 @@ export default function GovernancePage() {
           </div>
         </section>
       ) : null}
+      <section className="section-panel">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="text-sm font-semibold text-ink">Recovery Snapshot / 恢复快照</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Export a reviewed backup or dry-run an import before restoring repository state. 导出备份，或在恢复仓库状态前先试运行导入。
+            </p>
+          </div>
+          <span className="status-pill">{selectedWorkflowId || "all-workflows"}</span>
+        </div>
+        <div className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
+          <div className="space-y-4">
+            <div className="rounded-md border border-line bg-field p-3">
+              <h3 className="text-sm font-semibold text-ink">Export / 导出</h3>
+              <div className="mt-3 space-y-2">
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={snapshotIncludeRuns}
+                    onChange={(event) => setSnapshotIncludeRuns(event.target.checked)}
+                  />
+                  Include runs and traces / 包含运行与追踪
+                </label>
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={snapshotIncludeEvalResults}
+                    onChange={(event) => setSnapshotIncludeEvalResults(event.target.checked)}
+                  />
+                  Include eval results / 包含评估结果
+                </label>
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={snapshotIncludeAuditEvents}
+                    onChange={(event) => setSnapshotIncludeAuditEvents(event.target.checked)}
+                  />
+                  Include audit events / 包含审计事件
+                </label>
+              </div>
+              <button
+                className="control-button mt-3"
+                disabled={snapshotBusy !== null}
+                onClick={exportSnapshot}
+                type="button"
+              >
+                {snapshotBusy === "export" ? "Exporting... / 导出中..." : "Export Snapshot / 导出快照"}
+              </button>
+            </div>
+            <div className="rounded-md border border-line bg-field p-3">
+              <h3 className="text-sm font-semibold text-ink">Import / 导入</h3>
+              <label className="mt-3 block">
+                <span className="mb-1 block text-xs uppercase text-slate-500">Reason / 原因</span>
+                <input
+                  className="control-input w-full"
+                  value={snapshotReason}
+                  onChange={(event) => setSnapshotReason(event.target.value)}
+                />
+              </label>
+              <div className="mt-3 space-y-2">
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={snapshotSkipExistingEvalResults}
+                    onChange={(event) => setSnapshotSkipExistingEvalResults(event.target.checked)}
+                  />
+                  Skip existing eval results / 跳过已存在评估
+                </label>
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={snapshotConfirmImport}
+                    onChange={(event) => setSnapshotConfirmImport(event.target.checked)}
+                  />
+                  Confirm restore / 确认恢复
+                </label>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  className="control-button"
+                  disabled={snapshotBusy !== null || !snapshotText.trim()}
+                  onClick={() => importSnapshot(true)}
+                  type="button"
+                >
+                  {snapshotBusy === "dry-run" ? "Checking... / 检查中..." : "Dry Run / 试运行"}
+                </button>
+                <button
+                  className="control-button-primary"
+                  disabled={snapshotBusy !== null || !snapshotText.trim() || !snapshotConfirmImport || !snapshotReason.trim()}
+                  onClick={() => importSnapshot(false)}
+                  type="button"
+                >
+                  {snapshotBusy === "import" ? "Restoring... / 恢复中..." : "Restore / 恢复"}
+                </button>
+              </div>
+            </div>
+            {snapshotError ? <p className="text-sm text-red-700">{snapshotError}</p> : null}
+            {snapshotExportResult ? <SnapshotSummaryGrid title="Export Summary / 导出摘要" summary={snapshotExportResult.summary} /> : null}
+            {snapshotImportResult ? (
+              <div className="space-y-3">
+                <SnapshotSummaryGrid title={snapshotImportResult.dry_run ? "Import Preview / 导入预检" : "Import Result / 导入结果"} summary={snapshotImportResult.summary} />
+                <JsonViewer data={snapshotImportResult.report} />
+              </div>
+            ) : null}
+          </div>
+          <label className="block">
+            <span className="mb-2 block text-xs uppercase text-slate-500">Snapshot JSON / 快照 JSON</span>
+            <textarea
+              className="control-textarea min-h-[520px] font-mono text-xs"
+              value={snapshotText}
+              onChange={(event) => setSnapshotText(event.target.value)}
+              spellCheck={false}
+            />
+          </label>
+        </div>
+      </section>
       {riskReport ? (
         <section className="section-panel">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
@@ -951,6 +1165,22 @@ export default function GovernancePage() {
           <JsonViewer data={repairPlan} />
         </section>
       ) : null}
+    </div>
+  );
+}
+
+function SnapshotSummaryGrid({ title, summary }: { title: string; summary: SnapshotSummary }) {
+  return (
+    <div className="rounded-md border border-line bg-white p-3">
+      <h3 className="text-sm font-semibold text-ink">{title}</h3>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        <CostStat label="Current / 当前包" value={summary.current_workflow_count} />
+        <CostStat label="Versions / 版本" value={summary.workflow_version_count} />
+        <CostStat label="Runs / 运行" value={summary.run_count} />
+        <CostStat label="Evals / 评估" value={summary.eval_result_count} />
+        <CostStat label="Audit / 审计" value={summary.audit_event_count} />
+        <CostStat label="Schema / 架构" value={summary.schema_version} />
+      </div>
     </div>
   );
 }

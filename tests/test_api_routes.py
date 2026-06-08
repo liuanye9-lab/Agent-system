@@ -12,7 +12,7 @@ from apps.api.auth_tokens import create_actor_token
 from apps.api.main import app
 from apps.api.settings import DEFAULT_AUTH_SECRET_KEY, settings
 from packages.workflow_core.security import hash_password
-from packages.workflow_core.models import ActorContext, EvalResult, TraceRecord, WorkflowPackage, WorkflowRun
+from packages.workflow_core.models import ActorContext, AuditEvent, EvalResult, TraceRecord, WorkflowPackage, WorkflowRun
 from packages.workflow_core.models.enums import NodeExecutionStatus, WorkflowRunStatus
 from packages.workflow_core.storage import MemoryWorkflowRepository
 
@@ -1417,6 +1417,120 @@ def test_api_governance_quality_report_summarizes_eval_readiness_and_suggestions
         assert {item["code"] for item in payload["quality_items"]} == {
             "optimization_suggestions_available",
         }
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_api_repository_snapshot_export_and_import_restore_repository_state() -> None:
+    source_repository = MemoryWorkflowRepository()
+    workflow = WorkflowPackage.model_validate(load_example_payload())
+    candidate = workflow.model_copy(update={"version": "0.2.0"})
+    source_repository.save_workflow(workflow)
+    source_repository.save_workflow_version(candidate)
+    source_repository.save_run(
+        WorkflowRun(
+            run_id="snapshot-run-1",
+            workflow_id=workflow.workflow_id,
+            workflow_version=workflow.version,
+            status=WorkflowRunStatus.COMPLETED,
+            input_payload={"product": "platform"},
+            output_payload={"decision": "ready"},
+        )
+    )
+    source_repository.save_eval_results(
+        workflow.workflow_id,
+        [
+            EvalResult(
+                eval_id="snapshot-eval-1",
+                workflow_id=workflow.workflow_id,
+                score=1.0,
+                passed=True,
+                reason="matched expected output",
+            )
+        ],
+    )
+    source_repository.save_audit_event(
+        AuditEvent(
+            event_id="snapshot-audit-1",
+            event_type="snapshot_seed",
+            action="seed",
+            status="succeeded",
+            actor_id="tester",
+            actor_role="workflow-admin",
+            workflow_id=workflow.workflow_id,
+            workflow_version=workflow.version,
+            resource_type="workflow_package",
+            resource_id=f"{workflow.workflow_id}@{workflow.version}",
+        )
+    )
+    app.dependency_overrides[dependencies.get_repository] = lambda: source_repository
+    try:
+        client = TestClient(app)
+        non_admin_headers = actor_token_headers(
+            ActorContext(actor_id="operator-1", role="operator", scopes=["workflow:write"])
+        )
+
+        forbidden = client.get("/api/governance/snapshot", headers=non_admin_headers)
+        exported = client.get(
+            "/api/governance/snapshot?workflow_id=new-product-launch",
+            headers=admin_headers(client),
+        )
+
+        assert forbidden.status_code == 403
+        assert exported.status_code == 200
+        export_payload = exported.json()
+        assert export_payload["summary"]["current_workflow_count"] == 1
+        assert export_payload["summary"]["workflow_version_count"] == 2
+        assert export_payload["summary"]["run_count"] == 1
+        assert export_payload["summary"]["eval_result_count"] == 1
+        assert export_payload["summary"]["audit_event_count"] == 1
+        export_events = source_repository.list_audit_events(event_type="repository_snapshot")
+        assert export_events[0].details["summary"]["run_count"] == 1
+
+        target_repository = MemoryWorkflowRepository()
+        app.dependency_overrides[dependencies.get_repository] = lambda: target_repository
+
+        dry_run = client.post(
+            "/api/governance/snapshot/import",
+            headers=admin_headers(client),
+            json={"snapshot": export_payload["snapshot"], "dry_run": True},
+        )
+        missing_confirm = client.post(
+            "/api/governance/snapshot/import",
+            headers=admin_headers(client),
+            json={"snapshot": export_payload["snapshot"], "dry_run": False, "reason": "restore reviewed backup"},
+        )
+
+        assert dry_run.status_code == 200
+        assert dry_run.json()["dry_run"] is True
+        assert dry_run.json()["report"]["runs_to_import"] == 1
+        assert target_repository.get_workflow("new-product-launch") is None
+        assert missing_confirm.status_code == 422
+
+        restored = client.post(
+            "/api/governance/snapshot/import",
+            headers=admin_headers(client),
+            json={
+                "snapshot": export_payload["snapshot"],
+                "dry_run": False,
+                "confirm_import": True,
+                "reason": "restore reviewed backup",
+            },
+        )
+
+        assert restored.status_code == 200
+        assert restored.json()["report"]["current_workflows_imported"] == 1
+        assert restored.json()["report"]["workflow_versions_imported"] == 2
+        assert restored.json()["report"]["runs_imported"] == 1
+        assert restored.json()["report"]["eval_results_imported"] == 1
+        assert restored.json()["report"]["audit_events_imported"] == 1
+        assert target_repository.get_workflow("new-product-launch") is not None
+        assert target_repository.get_workflow_version("new-product-launch", "0.2.0") is not None
+        assert target_repository.get_run("snapshot-run-1") is not None
+        snapshot_events = target_repository.list_audit_events(event_type="repository_snapshot")
+        assert snapshot_events[0].action == "import"
+        assert snapshot_events[0].details["report"]["runs_imported"] == 1
+        assert "snapshot-run-1" not in json.dumps(snapshot_events[0].details)
     finally:
         app.dependency_overrides.clear()
 

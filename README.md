@@ -88,6 +88,8 @@ python tools/snapshot.py summary snapshots/pre-release.json
 python tools/snapshot.py import snapshots/pre-release.json
 ```
 
+The Governance console also exposes Recovery Snapshot export, dry-run import, and confirmed restore for `workflow-admin` operators.
+
 Snapshots include workflow packages, versions, runs, eval results, and audit events. Treat them as sensitive operational backups.
 
 Retention report:
