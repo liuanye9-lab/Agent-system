@@ -26,13 +26,13 @@ export function TraceTimeline({ traces }: { traces: Trace[] }) {
       {traces.map((trace, index) => {
         const Icon = statusIcon[trace.status as keyof typeof statusIcon] ?? CheckCircle2;
         return (
-          <div key={`${trace.node_id}-${index}`} className="rounded-md border border-line bg-white p-4 shadow-sm">
+          <div key={`${trace.node_id}-${index}`} className="surface p-4">
             <div className="flex items-start gap-3">
               <Icon className="mt-0.5 h-4 w-4 text-accent" aria-hidden />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h3 className="text-sm font-semibold text-ink">{trace.node_id}</h3>
-                  <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">{trace.status}</span>
+                  <span className="status-pill">{trace.status}</span>
                 </div>
                 <p className="mt-1 text-xs text-slate-500">{trace.duration_ms ?? 0} ms</p>
                 {trace.error ? <p className="mt-2 text-sm text-red-700">{trace.error}</p> : null}

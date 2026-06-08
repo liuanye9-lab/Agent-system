@@ -437,13 +437,14 @@ export default function GovernancePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="surface flex flex-wrap items-center justify-between gap-4 p-5">
         <div>
-          <h1 className="text-2xl font-semibold text-ink">Governance / 治理</h1>
-          <p className="mt-1 text-sm text-slate-600">Trace, eval, metrics, optimization loop. 追踪、评估、指标和优化闭环。</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Governance console / 治理控制台</p>
+          <h1 className="page-heading mt-1">Governance / 治理</h1>
+          <p className="page-subtitle">Trace, eval, metrics, optimization loop. 追踪、评估、指标和优化闭环。</p>
         </div>
         <select
-          className="rounded-md border border-line bg-white px-3 py-2 text-sm"
+          className="control-input"
           value={selectedWorkflowId}
           onChange={(event) => setSelectedWorkflowId(event.target.value)}
         >
@@ -455,7 +456,7 @@ export default function GovernancePage() {
           ))}
         </select>
       </div>
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="surface border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p> : null}
       <section className="grid gap-4 md:grid-cols-3">
         <MetricCard title="Node Success / 节点成功率" value={`${Math.round((metrics.node_success_rate ?? 0) * 100)}%`} />
         <MetricCard title="Approvals / 审批数" value={`${metrics.approval_count ?? 0}`} />

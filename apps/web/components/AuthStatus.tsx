@@ -27,7 +27,7 @@ export function AuthStatus() {
     return (
       <Link
         href="/auth"
-        className="inline-flex items-center gap-2 rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-ink hover:border-accent"
+        className="control-button"
       >
         <LogIn className="h-4 w-4" aria-hidden />
         Sign in / 登录
@@ -40,7 +40,7 @@ export function AuthStatus() {
       {sessions.map((session) => (
         <span
           key={session.actor.role}
-          className="inline-flex items-center gap-2 rounded-md border border-line bg-field px-3 py-2 text-xs font-medium text-slate-700"
+          className="inline-flex items-center gap-2 rounded-md border border-[#b7d7dc] bg-[#e6f1f3] px-3 py-2 text-xs font-medium text-accent"
           title={session.actor.actor_id}
         >
           <ShieldCheck className="h-4 w-4 text-accent" aria-hidden />
@@ -55,7 +55,7 @@ export function AuthStatus() {
           </button>
         </span>
       ))}
-      <Link className="rounded-md px-2 py-2 text-sm text-slate-700 hover:bg-field hover:text-accent" href="/auth">
+      <Link className="rounded-md px-2 py-2 text-sm font-medium text-slate-700 hover:bg-field hover:text-accent" href="/auth">
         Account / 账号
       </Link>
     </div>

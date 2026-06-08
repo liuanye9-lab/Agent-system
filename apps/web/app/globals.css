@@ -7,9 +7,7 @@
 }
 
 body {
-  background:
-    radial-gradient(circle at top left, rgba(20, 108, 117, 0.09), transparent 28rem),
-    linear-gradient(180deg, #f8fafc 0%, #eef3f6 100%);
+  background: #f4f7f8;
   color: #1f2933;
   min-height: 100vh;
 }
@@ -33,4 +31,40 @@ textarea {
     background-color 160ms ease,
     box-shadow 160ms ease,
     color 160ms ease;
+}
+
+input,
+select,
+textarea {
+  outline-color: #146c75;
+}
+
+@layer components {
+  .page-heading {
+    @apply text-2xl font-semibold tracking-normal text-ink;
+  }
+
+  .page-subtitle {
+    @apply mt-1 max-w-3xl text-sm leading-6 text-slate-600;
+  }
+
+  .surface {
+    @apply rounded-md border border-line bg-white shadow-sm;
+  }
+
+  .control-button-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#0f5860] disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .control-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-ink shadow-sm hover:border-accent hover:bg-field disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .control-input {
+    @apply rounded-md border border-line bg-white px-3 py-2 text-sm text-ink shadow-sm focus:border-accent focus:ring-2 focus:ring-accent/15;
+  }
+
+  .status-pill {
+    @apply inline-flex items-center rounded-sm border border-line bg-field px-2 py-1 text-xs font-medium text-slate-700;
+  }
 }
