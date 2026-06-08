@@ -65,6 +65,15 @@ python tools/preflight.py --profile release
 
 `local` checks developer readiness, `production` tightens auth and LLM configuration, and `release` also checks GitHub/Vercel publishability. The command exits non-zero when a required release condition fails, while warnings identify acceptable local defaults that should not be promoted.
 
+Post-deployment smoke check:
+
+```bash
+python3 tools/smoke.py --base-url http://127.0.0.1:8000
+python3 tools/smoke.py --base-url http://127.0.0.1:8000 --write
+```
+
+The default smoke check is read-only: it verifies `/health`, `/ready`, bearer-token login, and package validation. `--write` imports an isolated `smoke-*` workflow package and starts a shadow run, so use it only against local or staging repositories where creating smoke artifacts is acceptable.
+
 Containerized API:
 
 ```bash

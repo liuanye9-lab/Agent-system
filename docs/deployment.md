@@ -24,6 +24,24 @@ python tools/preflight.py --profile release
 
 Release preflight fails deliberately when GitHub credentials, Vercel credentials, production auth, or deployment links are missing.
 
+## Smoke Checks
+
+After a backend is running, use the smoke CLI to verify the deployed API path:
+
+```bash
+python3 tools/smoke.py --base-url https://your-api.example.com
+```
+
+The default mode is read-only and checks liveness, traffic readiness, bearer-token login, and workflow-package validation. Credentials default to `admin` / `admin` for local development, and can be supplied with `--username`, `--password`, `AGENT_WORKFLOW_SMOKE_USERNAME`, and `AGENT_WORKFLOW_SMOKE_PASSWORD`.
+
+For local or staging repositories where creating smoke artifacts is acceptable, run the write smoke:
+
+```bash
+python3 tools/smoke.py --base-url https://your-api.example.com --write
+```
+
+Write smoke imports a uniquely named `smoke-*` workflow package and starts a shadow run. It does not execute live writes, but it does persist the smoke workflow, run, traces, eval/audit side effects created by the API path, so do not use it against production data without an approved cleanup policy.
+
 ## Continuous Integration
 
 `.github/workflows/ci.yml` runs on pushes and pull requests to `main`.

@@ -16,6 +16,7 @@ agent-workflow-preflight = "packages.workflow_core.ops.preflight:main"
 agent-workflow-retention = "packages.workflow_core.ops.retention:main"
 agent-workflow-snapshot = "packages.workflow_core.ops.snapshot:main"
 agent-workflow-password = "packages.workflow_core.security.passwords:main"
+agent-workflow-smoke = "packages.workflow_core.ops.smoke:main"
 
 [project.optional-dependencies]
 dev = [
