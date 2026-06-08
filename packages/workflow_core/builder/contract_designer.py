@@ -81,9 +81,9 @@ class ContractDesignerAgent:
             required_fields=["context", "summary", "next_actions"],
             validation_rules=["context 必须存在", "summary 不能为空", "高风险结论必须写入 risks"],
             error_policy="缺少关键字段时暂停节点并记录 trace，等待人工补充或上游重跑。",
-            example_input={"context": {"product": "AI workflow platform"}, "artifacts": [], "assumptions": []},
+            example_input={"context": {"request_type": "workflow_operation"}, "artifacts": [], "assumptions": []},
             example_output={
-                "summary": f"{node_name} mock 输出摘要",
+                "summary": f"{node_name} 输出摘要",
                 "decision": "continue",
                 "risks": [],
                 "next_actions": ["进入下一个节点"],

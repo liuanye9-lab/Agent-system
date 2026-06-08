@@ -69,17 +69,16 @@ class ProblemFramerAgent:
         )
 
     def _deterministic_frame(self, user_request: str, workflow_id: str) -> ProblemFrameResult:
-        title = "新品上市流程智能体" if "新品" in user_request or "launch" in user_request.lower() else "业务流程智能体"
         problem_spec = ProblemSpec(
             id=f"{workflow_id}-problem",
-            title=title,
+            title="业务流程智能体",
             description=user_request,
-            target_users=["产品经理", "市场负责人", "渠道负责人", "业务审批人"],
-            business_goal="减少跨角色交接中的信息损耗，并把上市 know-how 沉淀为可执行、可评估的流程。",
-            start_event="业务方提交流程建设需求或新品上市任务。",
-            end_state="形成 Go / No-Go 决策、运行 trace、eval 结果和优化建议。",
+            target_users=["业务负责人", "流程运营", "审批人", "治理负责人"],
+            business_goal="把跨角色业务 know-how 沉淀为可执行、可追踪、可评估、可治理的智能体工作流。",
+            start_event="业务方提交流程建设需求、待处理事项或变更请求。",
+            end_state="形成结构化执行结果、审批记录、运行 trace、eval 结果和优化建议。",
             success_metrics=["流程节点可追踪", "关键字段完整率提升", "人工返工减少", "审批风险可审计"],
-            constraints=["MVP 阶段只使用 mock LLM 和 mock tools", "写操作必须审批", "所有输出必须通过 schema 校验"],
+            constraints=["默认使用注入式 LLM 和工具适配器", "写操作必须审批", "所有输出必须通过 schema 校验"],
             risks=["字段缺失导致流程误判", "高风险写操作绕过审批", "评测样例不足导致优化方向偏差"],
             human_roles=["业务 Owner", "流程架构师", "审批人", "治理负责人"],
         )

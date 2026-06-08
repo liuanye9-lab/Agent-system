@@ -136,14 +136,17 @@ def test_runner_fails_when_node_output_violates_contract() -> None:
 def test_builder_generated_package_is_contract_valid_and_runnable() -> None:
     build_result = WorkflowBuilder().generate("我想搭建一个新品上市流程智能体")
 
-    run = WorkflowRunner().run(build_result.workflow_package, {"product": "AI workflow platform"})
+    run = WorkflowRunner().run(
+        build_result.workflow_package,
+        {"context": {"request_type": "workflow_operation"}, "artifacts": [], "assumptions": []},
+    )
 
     assert run.status == WorkflowRunStatus.PAUSED
     assert run.workflow_version == build_result.workflow_package.version
-    assert run.current_node_id == "go-no-go-decision"
-    assert len(run.traces) == 7
+    assert run.current_node_id == "publish-control-decision"
+    assert len(run.traces) == 5
     assert run.traces[-1].workflow_version == build_result.workflow_package.version
-    assert run.traces[0].input_snapshot["context"]["product"] == "AI workflow platform"
+    assert run.traces[0].input_snapshot["context"]["request_type"] == "workflow_operation"
 
 
 def test_runner_retries_retryable_node_failure_and_continues() -> None:

@@ -113,7 +113,7 @@ export default function WorkflowDetailPage() {
   const [evalRunResults, setEvalRunResults] = useState<unknown[] | null>(null);
   const [shadowMode, setShadowMode] = useState(true);
   const [selectedRunVersion, setSelectedRunVersion] = useState("");
-  const [inputPayloadText, setInputPayloadText] = useState("{\n  \"product\": \"AI workflow platform\",\n  \"market\": \"global\"\n}");
+  const [inputPayloadText, setInputPayloadText] = useState("{\n  \"context\": {},\n  \"artifacts\": [],\n  \"assumptions\": []\n}");
   const [maxSteps, setMaxSteps] = useState(50);
   const [maxRetries, setMaxRetries] = useState(1);
   const [idempotencyKey, setIdempotencyKey] = useState("");

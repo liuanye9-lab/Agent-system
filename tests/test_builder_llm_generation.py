@@ -238,6 +238,6 @@ def test_workflow_builder_falls_back_when_llm_process_graph_is_invalid() -> None
     result = WorkflowBuilder(llm=BrokenProcessLLMClient()).generate("搭建坏流程测试")
 
     assert result.workflow_package.problem_spec.title == "坏流程测试"
-    assert result.workflow_package.process_spec.entry_node_id == "define-launch-goal"
-    assert result.workflow_package.process_spec.terminal_node_ids == ["go-no-go-decision"]
+    assert result.workflow_package.process_spec.entry_node_id == "intake-business-request"
+    assert result.workflow_package.process_spec.terminal_node_ids == ["publish-control-decision"]
     assert result.workflow_package.eval_specs[0].eval_id == "workflow-draft-golden-case-001"

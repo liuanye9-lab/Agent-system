@@ -102,7 +102,7 @@ class ToolMapperAgent:
         return ToolPolicy(
             tool_id=tool_id,
             name=f"{node_name} Mock Tool",
-            description=f"{node_name} 的 MVP mock 工具，不访问真实外部系统。",
+            description=f"{node_name} 的沙箱 mock 工具，不访问真实外部系统。",
             permission_level=permission_level,
             risk_level=risk_level,
             requires_approval=permission_level == PermissionLevel.WRITE_REQUIRES_APPROVAL,

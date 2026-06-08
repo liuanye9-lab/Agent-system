@@ -43,7 +43,7 @@ type ProcessNodeDraft = {
 };
 
 export default function NewWorkflowPage() {
-  const [userRequest, setUserRequest] = useState("我想搭建一个新品上市流程智能体");
+  const [userRequest, setUserRequest] = useState("");
   const [workflowId, setWorkflowId] = useState("");
   const [version, setVersion] = useState("0.1.0");
   const [saveAsCurrent, setSaveAsCurrent] = useState(true);
