@@ -144,7 +144,13 @@ def check_ci_config(root: Path) -> PreflightCheck:
             details={"expected": ".github/workflows/ci.yml"},
         )
     content = workflow_path.read_text(encoding="utf-8")
-    required_snippets = ["pytest", "tools/preflight.py --profile production", "docker build", "npm run build"]
+    required_snippets = [
+        "pytest",
+        "tools/preflight.py --profile production",
+        "docker build",
+        "tools/smoke.py --base-url",
+        "npm run build",
+    ]
     missing_snippets = [snippet for snippet in required_snippets if snippet not in content]
     if missing_snippets:
         return PreflightCheck(
@@ -156,7 +162,7 @@ def check_ci_config(root: Path) -> PreflightCheck:
     return PreflightCheck(
         name="ci_config",
         status="passed",
-        message="CI workflow covers backend tests, preflight, container health, and frontend build.",
+        message="CI workflow covers backend tests, preflight, container health, smoke checks, and frontend build.",
         details={"path": ".github/workflows/ci.yml"},
     )
 

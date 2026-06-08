@@ -16,7 +16,7 @@ jobs:
     env:
       AGENT_WORKFLOW_AUTH_SECRET_KEY: ci-auth-secret-change-in-production
       AGENT_WORKFLOW_ALLOW_DEV_ACTOR_HEADERS: "false"
-      AGENT_WORKFLOW_AUTH_USERS_JSON: '{"admin":{"password_hash":"pbkdf2_sha256$310000$dqVxJw5rpq3Dy5ajkViIhA$vLrVR0yikxjUUvSW9HoTCSEcznaBmTpv3G7QRY2GfJE","actor_id":"admin-1","role":"workflow-admin","display_name":"CI Admin"}}'
+      AGENT_WORKFLOW_AUTH_USERS_JSON: '{"admin":{"password_hash":"pbkdf2_sha256$310000$Y2ktc21va2Utc2FsdC0wMQ$AEyD0LeeXuHnFu-FKijDttgzJ6Clz8bqeb5kmUuIUGo","actor_id":"admin-1","role":"workflow-admin","display_name":"CI Admin"}}'
       AGENT_WORKFLOW_SEED_EXAMPLE_WORKFLOW: "false"
     steps:
       - uses: actions/checkout@v4
@@ -38,8 +38,10 @@ jobs:
     env:
       AGENT_WORKFLOW_AUTH_SECRET_KEY: ci-auth-secret-change-in-production
       AGENT_WORKFLOW_ALLOW_DEV_ACTOR_HEADERS: "false"
-      AGENT_WORKFLOW_AUTH_USERS_JSON: '{"admin":{"password_hash":"pbkdf2_sha256$310000$dqVxJw5rpq3Dy5ajkViIhA$vLrVR0yikxjUUvSW9HoTCSEcznaBmTpv3G7QRY2GfJE","actor_id":"admin-1","role":"workflow-admin","display_name":"CI Admin"}}'
+      AGENT_WORKFLOW_AUTH_USERS_JSON: '{"admin":{"password_hash":"pbkdf2_sha256$310000$Y2ktc21va2Utc2FsdC0wMQ$AEyD0LeeXuHnFu-FKijDttgzJ6Clz8bqeb5kmUuIUGo","actor_id":"admin-1","role":"workflow-admin","display_name":"CI Admin"}}'
       AGENT_WORKFLOW_SEED_EXAMPLE_WORKFLOW: "false"
+      AGENT_WORKFLOW_SMOKE_USERNAME: admin
+      AGENT_WORKFLOW_SMOKE_PASSWORD: ci-smoke-admin
     steps:
       - uses: actions/checkout@v4
       - name: Build API image
@@ -65,6 +67,8 @@ jobs:
             sleep 2
           done
           exit 1
+      - name: Run write smoke check
+        run: python3 tools/smoke.py --base-url http://127.0.0.1:8000 --write
 
   frontend:
     name: Frontend build

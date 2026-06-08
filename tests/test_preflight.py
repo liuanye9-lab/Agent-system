@@ -173,6 +173,7 @@ jobs:
       - run: python tools/preflight.py --profile production
       - run: pytest
       - run: docker build -f Dockerfile.api -t app .
+      - run: python3 tools/smoke.py --base-url http://127.0.0.1:8000 --write
       - run: npm run build
 """,
         encoding="utf-8",

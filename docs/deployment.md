@@ -50,7 +50,7 @@ The workflow checks:
 
 - backend dependency installation and `pytest`
 - production preflight with hardened auth environment values
-- API container build and `/ready` health check
+- API container build, `/ready` health check, and write smoke check
 - Next.js dashboard dependency installation and production build
 
 ## Backend

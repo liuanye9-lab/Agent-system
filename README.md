@@ -424,7 +424,7 @@ Deployment details are documented in `docs/deployment.md`.
 - Workflow generation/import require `workflow:write`, workflow runs require `workflow:run`, run cancellation requires `workflow:cancel`, and manual eval execution requires `workflow:evaluate`.
 - Operational preflight checks report local, production, and release readiness across Python runtime, required files, CI coverage, container assets, backend configuration, auth hardening, LLM setup, frontend tooling, GitHub publishability, and Vercel publishability without exposing secret values.
 - Release configuration is captured in `.env.example`, and GitHub/Vercel deployment steps are documented in `docs/deployment.md`.
-- GitHub Actions CI covers backend tests, production preflight, API container health, and Next.js dashboard build.
+- GitHub Actions CI covers backend tests, production preflight, API container health, write smoke checks, and Next.js dashboard build.
 - `Dockerfile.api` and `docker-compose.yml` provide a containerized API runtime with persistent SQLite storage and health checks.
 - Repository snapshots can export and restore workflow packages, versions, runs, eval results, and audit events for migration, disaster recovery, and release evidence.
 - Retention reports provide low-sensitive dry-run counts and ID samples for terminal runs, active runs past retention, eval results, and audit events.
