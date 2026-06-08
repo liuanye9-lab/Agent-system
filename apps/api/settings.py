@@ -5,6 +5,14 @@ import os
 
 
 DEFAULT_AUTH_SECRET_KEY = "local-dev-change-me"
+DEFAULT_CORS_ALLOWED_ORIGINS = ("http://localhost:3000", "http://127.0.0.1:3000")
+
+
+def parse_csv_setting(value: str | None, default: tuple[str, ...] = ()) -> tuple[str, ...]:
+    if value is None:
+        return default
+    parsed = tuple(item.strip() for item in value.split(",") if item.strip())
+    return parsed or default
 
 
 @dataclass(frozen=True)
@@ -19,6 +27,11 @@ class Settings:
     auth_token_ttl_seconds: int = int(os.getenv("AGENT_WORKFLOW_AUTH_TOKEN_TTL_SECONDS", "3600"))
     allow_dev_actor_headers: bool = os.getenv("AGENT_WORKFLOW_ALLOW_DEV_ACTOR_HEADERS", "true").lower() == "true"
     auth_users_json: str | None = os.getenv("AGENT_WORKFLOW_AUTH_USERS_JSON")
+    cors_allowed_origins: tuple[str, ...] = parse_csv_setting(
+        os.getenv("AGENT_WORKFLOW_CORS_ALLOWED_ORIGINS"),
+        DEFAULT_CORS_ALLOWED_ORIGINS,
+    )
+    cors_allow_origin_regex: str | None = os.getenv("AGENT_WORKFLOW_CORS_ALLOW_ORIGIN_REGEX") or None
     llm_provider: str = os.getenv("AGENT_WORKFLOW_LLM_PROVIDER", "mock").lower()
     llm_endpoint: str | None = os.getenv("AGENT_WORKFLOW_LLM_ENDPOINT")
     llm_api_key: str | None = os.getenv("AGENT_WORKFLOW_LLM_API_KEY")

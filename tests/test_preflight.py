@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from apps.api.settings import DEFAULT_AUTH_SECRET_KEY, Settings
+from apps.api.settings import DEFAULT_AUTH_SECRET_KEY, Settings, parse_csv_setting
 from packages.workflow_core.ops.preflight import (
     PreflightCheck,
     PreflightReport,
@@ -122,6 +122,16 @@ def test_preflight_validates_retention_day_settings() -> None:
     assert failed.status == "failed"
     assert "AGENT_WORKFLOW_RUN_RETENTION_DAYS" in failed.details["invalid"]
     assert "AGENT_WORKFLOW_AUDIT_RETENTION_DAYS" in failed.details["invalid"]
+
+
+def test_settings_parse_comma_separated_cors_origins() -> None:
+    parsed = parse_csv_setting(
+        " https://dashboard.example.com, https://preview.example.com ,, ",
+        ("http://localhost:3000",),
+    )
+
+    assert parsed == ("https://dashboard.example.com", "https://preview.example.com")
+    assert parse_csv_setting("", ("http://localhost:3000",)) == ("http://localhost:3000",)
 
 
 def test_vercel_release_preflight_requires_link_or_cli_token(tmp_path: Path) -> None:

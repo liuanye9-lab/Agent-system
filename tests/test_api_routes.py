@@ -105,6 +105,21 @@ def test_health_and_ready_routes_report_liveness_and_dependencies() -> None:
         app.dependency_overrides.clear()
 
 
+def test_api_cors_allows_configured_local_dashboard_origin() -> None:
+    client = TestClient(app)
+
+    response = client.options(
+        "/api/workflows",
+        headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://localhost:3000"
+
+
 def test_repository_startup_seed_can_be_disabled() -> None:
     original_database_url = settings.database_url
     original_seed_example_workflow = settings.seed_example_workflow
