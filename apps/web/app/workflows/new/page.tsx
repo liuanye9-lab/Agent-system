@@ -200,16 +200,16 @@ export default function NewWorkflowPage() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[0.82fr_1.18fr]">
-      <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+      <section className="section-panel">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Builder / 构建器</p>
-          <h1 className="mt-2 text-2xl font-semibold text-ink">New Workflow / 新建工作流</h1>
+          <p className="section-kicker">Builder / 构建器</p>
+          <h1 className="page-heading mt-1">New Workflow / 新建工作流</h1>
           <p className="mt-1 text-sm text-slate-600">Describe the business process or import a package JSON. 描述业务流程，或导入工作流包 JSON。</p>
         </div>
         <form className="mt-4 space-y-4" onSubmit={onSubmit}>
           <FieldLabel label="Request / 需求描述">
             <textarea
-              className="min-h-32 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
+              className="control-textarea min-h-32"
               value={userRequest}
               onChange={(event) => setUserRequest(event.target.value)}
             />
@@ -217,21 +217,21 @@ export default function NewWorkflowPage() {
           <div className="grid gap-3 md:grid-cols-2">
             <FieldLabel label="Workflow ID / 工作流 ID">
               <input
-                className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none focus:border-accent"
+                className="control-input w-full"
                 value={workflowId}
                 onChange={(event) => setWorkflowId(event.target.value)}
               />
             </FieldLabel>
             <FieldLabel label="Version / 版本">
               <input
-                className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none focus:border-accent"
+                className="control-input w-full"
                 value={version}
                 onChange={(event) => setVersion(event.target.value)}
               />
             </FieldLabel>
             <FieldLabel label="Name / 名称">
               <input
-                className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none focus:border-accent"
+                className="control-input w-full"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
               />
@@ -248,7 +248,7 @@ export default function NewWorkflowPage() {
           </div>
           <FieldLabel label="Business Goal / 业务目标">
             <textarea
-              className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
+              className="control-textarea min-h-20"
               value={businessGoal}
               onChange={(event) => setBusinessGoal(event.target.value)}
             />
@@ -256,14 +256,14 @@ export default function NewWorkflowPage() {
           <div className="grid gap-3 md:grid-cols-2">
             <FieldLabel label="Start Event / 触发事件">
               <textarea
-                className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
+                className="control-textarea min-h-20"
                 value={startEvent}
                 onChange={(event) => setStartEvent(event.target.value)}
               />
             </FieldLabel>
             <FieldLabel label="End State / 结束状态">
               <textarea
-                className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
+                className="control-textarea min-h-20"
                 value={endState}
                 onChange={(event) => setEndState(event.target.value)}
               />
@@ -272,35 +272,35 @@ export default function NewWorkflowPage() {
           <div className="grid gap-3 md:grid-cols-2">
             <FieldLabel label="Target Users / 目标用户">
               <textarea
-                className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
+                className="control-textarea min-h-20"
                 value={targetUsersText}
                 onChange={(event) => setTargetUsersText(event.target.value)}
               />
             </FieldLabel>
             <FieldLabel label="Human Roles / 人类角色">
               <textarea
-                className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
+                className="control-textarea min-h-20"
                 value={humanRolesText}
                 onChange={(event) => setHumanRolesText(event.target.value)}
               />
             </FieldLabel>
             <FieldLabel label="Success Metrics / 成功指标">
               <textarea
-                className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
+                className="control-textarea min-h-20"
                 value={successMetricsText}
                 onChange={(event) => setSuccessMetricsText(event.target.value)}
               />
             </FieldLabel>
             <FieldLabel label="Constraints / 约束">
               <textarea
-                className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
+                className="control-textarea min-h-20"
                 value={constraintsText}
                 onChange={(event) => setConstraintsText(event.target.value)}
               />
             </FieldLabel>
             <FieldLabel label="Risks / 风险">
               <textarea
-                className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
+                className="control-textarea min-h-20"
                 value={risksText}
                 onChange={(event) => setRisksText(event.target.value)}
               />
@@ -312,7 +312,7 @@ export default function NewWorkflowPage() {
               <button
                 type="button"
                 onClick={addNode}
-                className="inline-flex items-center gap-2 rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-ink hover:border-accent"
+                className="control-button"
               >
                 <Plus className="h-4 w-4" aria-hidden />
                 Add Node / 添加节点
@@ -323,14 +323,14 @@ export default function NewWorkflowPage() {
                 <div className="grid gap-3 md:grid-cols-2">
                   <FieldLabel label="Node Name / 节点名称">
                     <input
-                      className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none focus:border-accent"
+                      className="control-input w-full"
                       value={node.name}
                       onChange={(event) => updateNode(node.id, { name: event.target.value })}
                     />
                   </FieldLabel>
                   <FieldLabel label="Node Type / 节点类型">
                     <select
-                      className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none focus:border-accent"
+                      className="control-input w-full"
                       value={node.node_type}
                       onChange={(event) =>
                         updateNode(node.id, { node_type: event.target.value as ProcessNodeDraft["node_type"] })
@@ -344,7 +344,7 @@ export default function NewWorkflowPage() {
                   </FieldLabel>
                   <FieldLabel label="Owner Role / 负责人角色">
                     <input
-                      className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none focus:border-accent"
+                      className="control-input w-full"
                       value={node.owner_role}
                       onChange={(event) => updateNode(node.id, { owner_role: event.target.value })}
                     />
@@ -360,14 +360,14 @@ export default function NewWorkflowPage() {
                   </label>
                   <FieldLabel label="Description / 描述">
                     <textarea
-                      className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
+                      className="control-textarea min-h-20"
                       value={node.description}
                       onChange={(event) => updateNode(node.id, { description: event.target.value })}
                     />
                   </FieldLabel>
                   <FieldLabel label="Done Condition / 完成条件">
                     <textarea
-                      className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
+                      className="control-textarea min-h-20"
                       value={node.done_condition}
                       onChange={(event) => updateNode(node.id, { done_condition: event.target.value })}
                     />
@@ -386,7 +386,7 @@ export default function NewWorkflowPage() {
           </div>
           <button
             type="submit"
-            className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-[#0F5860] disabled:opacity-60"
+            className="control-button-primary"
             disabled={loading}
           >
             <Sparkles className="h-4 w-4" aria-hidden />
@@ -424,7 +424,7 @@ export default function NewWorkflowPage() {
             </label>
           </div>
           <textarea
-            className="min-h-56 w-full rounded-md border border-line bg-white p-3 font-mono text-xs outline-none focus:border-accent"
+            className="control-textarea min-h-56 font-mono text-xs"
             value={packageJsonText}
             onChange={(event) => setPackageJsonText(event.target.value)}
             spellCheck={false}
@@ -433,7 +433,7 @@ export default function NewWorkflowPage() {
             <button
               type="button"
               onClick={validatePackage}
-              className="inline-flex items-center gap-2 rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-ink hover:border-accent disabled:opacity-60"
+              className="control-button"
               disabled={packageBusy !== null}
             >
               <Check className="h-4 w-4" aria-hidden />
@@ -442,7 +442,7 @@ export default function NewWorkflowPage() {
             <button
               type="button"
               onClick={importPackage}
-              className="inline-flex items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-[#0F5860] disabled:opacity-60"
+              className="control-button-primary"
               disabled={packageBusy !== null}
             >
               <Upload className="h-4 w-4" aria-hidden />
@@ -490,8 +490,8 @@ export default function NewWorkflowPage() {
 
 function FieldLabel({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label className="block">
-      <span className="mb-2 block text-xs uppercase text-slate-500">{label}</span>
+    <label className="form-label">
+      <span className="form-label-text">{label}</span>
       {children}
     </label>
   );

@@ -36,16 +36,10 @@ export function TraceTimeline({ traces }: { traces: Trace[] }) {
                 </div>
                 <p className="mt-1 text-xs text-slate-500">{trace.duration_ms ?? 0} ms</p>
                 {trace.error ? <p className="mt-2 text-sm text-red-700">{trace.error}</p> : null}
-                <details className="mt-3 text-xs text-slate-700">
-                  <summary className="cursor-pointer">Input / Output / 输入与输出</summary>
-                  <pre className="mt-2 rounded-sm bg-field p-3">
-                    {JSON.stringify(
-                      { input: trace.input_snapshot, output: trace.output_snapshot },
-                      null,
-                      2
-                    )}
-                  </pre>
-                </details>
+                <div className="mt-3 grid gap-2 md:grid-cols-2">
+                  <PayloadSummary title="Input / 输入" value={trace.input_snapshot} />
+                  <PayloadSummary title="Output / 输出" value={trace.output_snapshot} />
+                </div>
               </div>
             </div>
           </div>
@@ -53,4 +47,68 @@ export function TraceTimeline({ traces }: { traces: Trace[] }) {
       })}
     </div>
   );
+}
+
+function PayloadSummary({ title, value }: { title: string; value: unknown }) {
+  const summary = summarizePayload(value);
+  return (
+    <div className="rounded-sm border border-line bg-[#fbfcfd] p-3 text-xs text-slate-600">
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-semibold text-ink">{title}</span>
+        <span className="status-pill px-1.5 py-0.5">{summary.kind}</span>
+      </div>
+      <dl className="mt-2 grid grid-cols-2 gap-2">
+        <div>
+          <dt className="uppercase text-slate-500">Keys / 键</dt>
+          <dd className="font-semibold text-ink">{summary.keyCount}</dd>
+        </div>
+        <div>
+          <dt className="uppercase text-slate-500">Sensitive / 敏感</dt>
+          <dd className="font-semibold text-ink">{summary.sensitiveKeyCount}</dd>
+        </div>
+      </dl>
+      <p className="mt-2 break-words text-slate-500">{summary.preview}</p>
+    </div>
+  );
+}
+
+function summarizePayload(value: unknown) {
+  if (value === null || value === undefined) {
+    return { kind: "empty", keyCount: 0, sensitiveKeyCount: 0, preview: "No payload / 无载荷" };
+  }
+  if (Array.isArray(value)) {
+    return {
+      kind: "array",
+      keyCount: value.length,
+      sensitiveKeyCount: countSensitiveKeys(value),
+      preview: `${value.length} items / 项`
+    };
+  }
+  if (typeof value === "object") {
+    const keys = Object.keys(value as Record<string, unknown>);
+    const visibleKeys = keys.slice(0, 8);
+    const hiddenCount = Math.max(keys.length - visibleKeys.length, 0);
+    return {
+      kind: "object",
+      keyCount: keys.length,
+      sensitiveKeyCount: countSensitiveKeys(value),
+      preview: visibleKeys.length
+        ? `${visibleKeys.join(", ")}${hiddenCount ? ` +${hiddenCount}` : ""}`
+        : "No top-level keys / 无顶层键"
+    };
+  }
+  return { kind: typeof value, keyCount: 1, sensitiveKeyCount: 0, preview: "Primitive value redacted / 基础值已摘要" };
+}
+
+function countSensitiveKeys(value: unknown): number {
+  if (!value || typeof value !== "object") {
+    return 0;
+  }
+  if (Array.isArray(value)) {
+    return value.reduce((count, item) => count + countSensitiveKeys(item), 0);
+  }
+  return Object.entries(value as Record<string, unknown>).reduce((count, [key, nested]) => {
+    const isSensitive = /token|password|secret|api[_-]?key|authorization|credential/i.test(key);
+    return count + (isSensitive ? 1 : 0) + countSensitiveKeys(nested);
+  }, 0);
 }

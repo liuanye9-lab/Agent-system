@@ -26,9 +26,9 @@ export default function WorkflowsPage() {
 
   return (
     <div className="space-y-5">
-      <div className="surface flex flex-wrap items-center justify-between gap-4 p-5">
+      <div className="page-band">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Package registry / 包注册表</p>
+          <p className="section-kicker">Package registry / 包注册表</p>
           <h1 className="page-heading mt-1">Workflows / 工作流</h1>
           <p className="page-subtitle">Generated packages ready to run, review, and govern. 已生成的工作流包，可运行、审查和治理。</p>
         </div>
@@ -41,7 +41,7 @@ export default function WorkflowsPage() {
         </Link>
       </div>
       {error ? <p className="surface border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p> : null}
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {workflows.map((workflow) => (
           <WorkflowCard key={workflow.workflow_id} workflow={workflow} />
         ))}

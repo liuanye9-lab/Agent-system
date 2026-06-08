@@ -16,11 +16,11 @@ export function WorkflowCard({ workflow }: WorkflowCardProps) {
   return (
     <Link
       href={`/workflows/${workflow.workflow_id}`}
-      className="surface group block p-4 hover:border-accent hover:shadow-md"
+      className="surface group block p-5 hover:border-accent hover:shadow-[0_8px_28px_rgba(20,108,117,0.10)]"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-field text-accent">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[#cfe4e7] bg-[#eef7f8] text-accent">
             <GitBranch className="h-4 w-4" aria-hidden />
           </span>
           <div className="min-w-0">
@@ -30,8 +30,8 @@ export function WorkflowCard({ workflow }: WorkflowCardProps) {
         </div>
         <ArrowRight className="mt-2 h-4 w-4 shrink-0 text-slate-400 group-hover:text-accent" aria-hidden />
       </div>
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <span className="status-pill">v{workflow.version}</span>
+      <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-line/70 pt-4">
+        <span className="status-pill status-accent">v{workflow.version}</span>
         <span className="inline-flex min-w-0 items-center gap-1 text-xs text-slate-500">
           <CalendarClock className="h-3.5 w-3.5 shrink-0" aria-hidden />
           <span className="truncate">{createdAt}</span>

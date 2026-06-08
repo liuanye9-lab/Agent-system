@@ -26,16 +26,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#f7f9fb_0%,#eef3f6_100%)] text-ink lg:grid lg:grid-cols-[248px_1fr]">
-      <aside className="border-b border-line/80 bg-white lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
+    <div className="min-h-screen text-ink lg:grid lg:grid-cols-[268px_1fr]">
+      <aside className="border-b border-line/80 bg-white/95 backdrop-blur lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
         <div className="flex h-full flex-col">
           <div className="border-b border-line/80 px-5 py-5">
             <Link href="/" className="group flex items-center gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-ink text-white shadow-sm">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-ink text-white shadow-[0_8px_20px_rgba(31,41,51,0.18)]">
                 <GitBranch className="h-5 w-5" aria-hidden />
               </span>
               <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold leading-5 text-ink group-hover:text-accent">
+                <span className="block truncate text-base font-semibold leading-5 text-ink group-hover:text-accent">
                   Agent Workflow
                 </span>
                 <span className="block truncate text-xs font-medium text-muted">智能体工作流控制台</span>
@@ -54,8 +54,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                   className={[
                     "flex min-w-fit items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium",
                     active
-                      ? "bg-[#e6f1f3] text-accent shadow-[inset_3px_0_0_#146C75]"
-                      : "text-slate-700 hover:bg-field hover:text-ink"
+                      ? "bg-[#e6f1f3] text-accent shadow-[inset_3px_0_0_#146C75,0_1px_2px_rgba(20,108,117,0.10)]"
+                      : "text-slate-700 hover:bg-[#f3f7f8] hover:text-ink"
                   ].join(" ")}
                 >
                   <Icon className="h-4 w-4 shrink-0" aria-hidden />
@@ -69,7 +69,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="hidden border-t border-line/80 p-4 lg:block">
-            <div className="rounded-md border border-line bg-field p-3">
+            <div className="rounded-md border border-line bg-[#f7fafb] p-3">
               <div className="flex items-center gap-2 text-xs font-semibold uppercase text-slate-600">
                 <Gauge className="h-4 w-4 text-accent" aria-hidden />
                 Control Plane
@@ -90,7 +90,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <AuthStatus />
           </div>
         </header>
-        <main className="mx-auto max-w-[1440px] px-5 py-6 lg:px-8 lg:py-8">{children}</main>
+        <main className="mx-auto max-w-[1480px] px-5 py-6 lg:px-8 lg:py-8">{children}</main>
       </div>
     </div>
   );

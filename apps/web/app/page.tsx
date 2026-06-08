@@ -34,28 +34,28 @@ const readinessItems = [
 export default function HomePage() {
   return (
     <div className="space-y-6">
-      <section className="grid gap-4 xl:grid-cols-[1fr_360px]">
-        <div className="surface p-5 lg:p-6">
+      <section className="grid gap-4 xl:grid-cols-[1fr_380px]">
+        <div className="section-panel overflow-hidden">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Operator workspace / 操作台</p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-normal text-ink">Agent Workflow Builder / 智能体工作流构建器</h1>
+              <p className="section-kicker">Operator workspace / 操作台</p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-normal text-ink md:text-4xl">Agent Workflow Builder / 智能体工作流构建器</h1>
               <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-600">
                 Compile business know-how into versioned workflow packages, executable agent graphs, traceable runs, evals, and optimization suggestions.
                 将业务经验编译为可版本化工作流包、可执行智能体图、可追踪运行、评估与优化建议。
               </p>
             </div>
-            <span className="status-pill border-[#b7d7dc] bg-[#e6f1f3] text-accent">MVP control plane / MVP 控制面</span>
+            <span className="status-pill status-accent">Project console / 项目控制台</span>
           </div>
 
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
+          <div className="mt-6 grid gap-3 md:grid-cols-3">
             {[
               ["Builder", "Candidate packages", "候选工作流包"],
               ["Runtime", "Approval aware DAGs", "审批感知 DAG"],
               ["Governance", "Quality and risk gates", "质量与风险门禁"]
             ].map(([label, value, cn]) => (
-              <div key={label} className="rounded-md border border-line bg-field px-4 py-3">
-                <p className="text-xs font-medium uppercase text-slate-500">{label}</p>
+              <div key={label} className="metric-card bg-[#fbfcfd]">
+                <p className="metric-label">{label}</p>
                 <p className="mt-1 text-sm font-semibold text-ink">{value}</p>
                 <p className="mt-1 text-xs text-slate-500">{cn}</p>
               </div>
@@ -80,10 +80,10 @@ export default function HomePage() {
           </div>
         </div>
 
-        <aside className="surface p-5">
+        <aside className="section-panel">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Readiness / 就绪项</p>
+              <p className="section-kicker text-slate-500">Readiness / 就绪项</p>
               <h2 className="mt-1 text-base font-semibold text-ink">Release discipline / 发布纪律</h2>
             </div>
             <Wrench className="h-5 w-5 text-accent" aria-hidden />
@@ -103,10 +103,10 @@ export default function HomePage() {
         {operatingPanels.map((panel) => {
           const Icon = panel.icon;
           return (
-            <Link key={panel.title} href={panel.href} className="surface group p-5 hover:border-accent hover:shadow-md">
+            <Link key={panel.title} href={panel.href} className="surface group p-5 hover:border-accent hover:shadow-[0_8px_28px_rgba(20,108,117,0.10)]">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-md bg-field text-accent">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-md border border-[#cfe4e7] bg-[#eef7f8] text-accent">
                     <Icon className="h-5 w-5" aria-hidden />
                   </span>
                   <div>

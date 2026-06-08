@@ -7,7 +7,9 @@
 }
 
 body {
-  background: #f4f7f8;
+  background:
+    radial-gradient(circle at top left, rgba(20, 108, 117, 0.08), transparent 32rem),
+    linear-gradient(180deg, #f7f9fb 0%, #edf2f5 100%);
   color: #1f2933;
   min-height: 100vh;
 }
@@ -41,7 +43,7 @@ textarea {
 
 @layer components {
   .page-heading {
-    @apply text-2xl font-semibold tracking-normal text-ink;
+    @apply text-2xl font-semibold tracking-normal text-ink md:text-3xl;
   }
 
   .page-subtitle {
@@ -49,7 +51,67 @@ textarea {
   }
 
   .surface {
-    @apply rounded-md border border-line bg-white shadow-sm;
+    @apply rounded-md border border-line/90 bg-white shadow-[0_1px_2px_rgba(31,41,51,0.04),0_10px_30px_rgba(31,41,51,0.05)];
+  }
+
+  .page-band {
+    @apply surface flex flex-wrap items-center justify-between gap-4 p-5 lg:p-6;
+  }
+
+  .section-panel {
+    @apply surface p-5 lg:p-6;
+  }
+
+  .section-title {
+    @apply text-sm font-semibold text-ink;
+  }
+
+  .section-kicker {
+    @apply text-xs font-semibold uppercase tracking-[0.16em] text-accent;
+  }
+
+  .metric-card {
+    @apply rounded-md border border-line/90 bg-white p-4 shadow-[0_1px_2px_rgba(31,41,51,0.03)];
+  }
+
+  .metric-label {
+    @apply text-xs font-medium uppercase text-slate-500;
+  }
+
+  .metric-value {
+    @apply mt-1 text-xl font-semibold tracking-normal text-ink;
+  }
+
+  .data-table {
+    @apply w-full text-left text-sm;
+  }
+
+  .data-table thead {
+    @apply border-b border-line bg-[#f2f6f7] text-xs uppercase text-slate-600;
+  }
+
+  .data-table th {
+    @apply px-4 py-3 font-semibold;
+  }
+
+  .data-table td {
+    @apply px-4 py-3 align-top;
+  }
+
+  .data-table tbody {
+    @apply divide-y divide-line;
+  }
+
+  .data-table tbody tr {
+    @apply bg-white hover:bg-[#f7fafb];
+  }
+
+  .form-label {
+    @apply block;
+  }
+
+  .form-label-text {
+    @apply mb-2 block text-xs font-semibold uppercase tracking-normal text-slate-500;
   }
 
   .control-button-primary {
@@ -64,7 +126,31 @@ textarea {
     @apply rounded-md border border-line bg-white px-3 py-2 text-sm text-ink shadow-sm focus:border-accent focus:ring-2 focus:ring-accent/15;
   }
 
+  .control-textarea {
+    @apply min-h-24 w-full rounded-md border border-line bg-white p-3 text-sm text-ink shadow-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/15;
+  }
+
   .status-pill {
     @apply inline-flex items-center rounded-sm border border-line bg-field px-2 py-1 text-xs font-medium text-slate-700;
+  }
+
+  .status-success {
+    @apply border-emerald-200 bg-emerald-50 text-emerald-700;
+  }
+
+  .status-warning {
+    @apply border-[#f2d39b] bg-[#fff7e8] text-[#9a5b13];
+  }
+
+  .status-danger {
+    @apply border-red-200 bg-red-50 text-red-700;
+  }
+
+  .status-accent {
+    @apply border-[#b7d7dc] bg-[#e6f1f3] text-accent;
+  }
+
+  .code-panel {
+    @apply max-h-[520px] overflow-auto rounded-md border border-line bg-[#fbfcfd] p-4 text-xs leading-5 text-slate-800 shadow-inner;
   }
 }

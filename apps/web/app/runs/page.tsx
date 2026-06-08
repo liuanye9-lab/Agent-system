@@ -31,15 +31,15 @@ const statuses = [
 function statusClass(status: string) {
   switch (status) {
     case "completed":
-      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+      return "status-success";
     case "failed":
     case "rejected":
     case "canceled":
-      return "border-red-200 bg-red-50 text-red-700";
+      return "status-danger";
     case "paused":
-      return "border-amber-200 bg-amber-50 text-amber-700";
+      return "status-warning";
     case "running":
-      return "border-[#b7d7dc] bg-[#e6f1f3] text-accent";
+      return "status-accent";
     default:
       return "border-line bg-field text-slate-700";
   }
@@ -75,9 +75,9 @@ export default function RunsPage() {
 
   return (
     <div className="space-y-5">
-      <div className="surface flex flex-wrap items-center justify-between gap-4 p-5">
+      <div className="page-band">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Runtime queue / 运行队列</p>
+          <p className="section-kicker">Runtime queue / 运行队列</p>
           <h1 className="page-heading mt-1">Runs / 运行</h1>
           <p className="page-subtitle">Runtime queue by status, version, mode, and active node. 按状态、版本、模式和当前节点查看运行队列。</p>
         </div>
@@ -107,8 +107,8 @@ export default function RunsPage() {
       {error ? <p className="surface border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p> : null}
       <div className="surface overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[980px] text-left text-sm">
-            <thead className="border-b border-line bg-field text-xs uppercase text-slate-600">
+          <table className="data-table min-w-[980px]">
+            <thead>
               <tr>
                 <th className="px-4 py-3">Run / 运行</th>
                 <th className="px-4 py-3">Workflow / 工作流</th>
@@ -120,9 +120,9 @@ export default function RunsPage() {
                 <th className="px-4 py-3">Action / 操作</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-line">
+            <tbody>
               {runs.map((run) => (
-                <tr key={run.run_id} className="bg-white hover:bg-field/70">
+                <tr key={run.run_id}>
                   <td className="px-4 py-3 align-top">
                     <Link className="font-medium text-accent hover:underline" href={`/runs/${run.run_id}`}>
                       {run.run_id}

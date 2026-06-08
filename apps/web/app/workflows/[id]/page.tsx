@@ -277,9 +277,9 @@ export default function WorkflowDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="surface flex flex-wrap items-center justify-between gap-4 p-5">
+      <div className="page-band">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Workflow package / 工作流包</p>
+          <p className="section-kicker">Workflow package / 工作流包</p>
           <h1 className="page-heading mt-1">{workflow.name}</h1>
           <p className="page-subtitle">
             {workflow.workflow_id} · v{workflow.version}
@@ -295,7 +295,7 @@ export default function WorkflowDetailPage() {
         </div>
       ) : null}
       <WorkflowGraph processSpec={workflow.process_spec} toolPolicies={workflow.tool_policies} dataContracts={workflow.data_contracts} />
-      <section className="surface p-5">
+      <section className="section-panel">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-semibold text-ink">Run Launch / 启动运行</h2>
           <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">
@@ -384,7 +384,7 @@ export default function WorkflowDetailPage() {
           <label className="block">
             <span className="mb-2 block text-xs uppercase text-slate-500">Input Payload JSON / 输入载荷 JSON</span>
             <textarea
-              className="min-h-64 w-full rounded-md border border-line bg-white p-3 font-mono text-xs text-ink shadow-sm focus:border-accent focus:ring-2 focus:ring-accent/15"
+              className="control-textarea min-h-64 font-mono text-xs"
               value={inputPayloadText}
               onChange={(event) => setInputPayloadText(event.target.value)}
             />
@@ -422,8 +422,8 @@ export default function WorkflowDetailPage() {
       <section>
         <h2 className="mb-3 text-sm font-semibold text-ink">Version History / 版本历史</h2>
         <div className="overflow-hidden rounded-md border border-line bg-white shadow-sm">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-field text-xs uppercase text-slate-600">
+          <table className="data-table">
+            <thead>
               <tr>
                 <th className="px-3 py-2">Version / 版本</th>
                 <th className="px-3 py-2">Name / 名称</th>
@@ -434,7 +434,7 @@ export default function WorkflowDetailPage() {
             </thead>
             <tbody>
               {versions.map((version) => (
-                <tr key={version.version} className="border-t border-line">
+                <tr key={version.version}>
                   <td className="px-3 py-2 font-medium text-ink">{version.version}</td>
                   <td className="px-3 py-2 text-slate-700">{version.name}</td>
                   <td className="px-3 py-2 text-slate-700">{new Date(version.created_at).toLocaleString()}</td>
@@ -446,7 +446,7 @@ export default function WorkflowDetailPage() {
                       <button
                         type="button"
                         onClick={() => setSelectedRunVersion(version.version)}
-                        className="inline-flex items-center gap-1 rounded-md border border-line bg-white px-2 py-1 text-xs font-medium text-ink hover:border-accent disabled:opacity-60"
+                        className="control-button px-2 py-1 text-xs"
                       >
                         <Rocket className="h-3 w-3" aria-hidden />
                         Review / 审查
@@ -473,7 +473,7 @@ export default function WorkflowDetailPage() {
 
 function VersionReviewPanel({ diff }: { diff: WorkflowDiff }) {
   return (
-    <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+    <section className="section-panel">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-sm font-semibold text-ink">Version Review / 版本审查</h2>
@@ -487,8 +487,8 @@ function VersionReviewPanel({ diff }: { diff: WorkflowDiff }) {
       </div>
       {diff.changes.length > 0 ? (
         <div className="overflow-hidden rounded-sm border border-line">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-field text-xs uppercase text-slate-600">
+          <table className="data-table">
+            <thead>
               <tr>
                 <th className="px-3 py-2">Op / 操作</th>
                 <th className="px-3 py-2">Path / 路径</th>
@@ -498,7 +498,7 @@ function VersionReviewPanel({ diff }: { diff: WorkflowDiff }) {
             </thead>
             <tbody>
               {diff.changes.slice(0, 12).map((change, index) => (
-                <tr key={`${change.path}-${index}`} className="border-t border-line">
+                <tr key={`${change.path}-${index}`}>
                   <td className="px-3 py-2 text-slate-700">{change.op}</td>
                   <td className="break-all px-3 py-2 font-medium text-ink">{change.path}</td>
                   <td className="break-all px-3 py-2 text-slate-700">{previewValue(change.from)}</td>
@@ -517,7 +517,7 @@ function VersionReviewPanel({ diff }: { diff: WorkflowDiff }) {
 
 function ReleaseReadinessPanel({ readiness }: { readiness: ReleaseReadiness }) {
   return (
-    <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+    <section className="section-panel">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-ink">Live Readiness / 正式发布就绪</h2>
         <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">
@@ -553,14 +553,14 @@ function VersionEvalPanel({
   onRun: () => void;
 }) {
   return (
-    <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+    <section className="section-panel">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-ink">Version Evals / 版本评估</h2>
         <button
           type="button"
           onClick={onRun}
           disabled={busy}
-          className="rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-ink hover:border-accent disabled:opacity-60"
+          className="control-button"
         >
           {busy ? "Running... / 运行中..." : `Run / 运行 v${version}`}
         </button>
@@ -602,7 +602,7 @@ function PromotionPanel({
   onPromote: () => void;
 }) {
   return (
-    <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+    <section className="section-panel">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-ink">Promotion / 提升为当前版本</h2>
         <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">v{version}</span>
@@ -613,7 +613,7 @@ function PromotionPanel({
           <textarea
             value={reason}
             onChange={(event) => onReasonChange(event.target.value)}
-            className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
+            className="control-textarea min-h-20"
           />
         </label>
         <label className="block">
@@ -621,7 +621,7 @@ function PromotionPanel({
           <textarea
             value={changeSummary}
             onChange={(event) => onChangeSummaryChange(event.target.value)}
-            className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
+            className="control-textarea min-h-20"
           />
         </label>
         <label className="block md:col-span-2">
@@ -629,7 +629,7 @@ function PromotionPanel({
           <textarea
             value={riskAcceptance}
             onChange={(event) => onRiskAcceptanceChange(event.target.value)}
-            className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
+            className="control-textarea min-h-20"
           />
         </label>
       </div>
@@ -656,7 +656,7 @@ function PromotionPanel({
           type="button"
           onClick={onPromote}
           disabled={busy}
-          className="inline-flex items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-[#0F5860] disabled:opacity-60"
+          className="control-button-primary"
         >
           <Rocket className="h-4 w-4" aria-hidden />
           Promote / 提升

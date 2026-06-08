@@ -437,9 +437,9 @@ export default function GovernancePage() {
 
   return (
     <div className="space-y-6">
-      <div className="surface flex flex-wrap items-center justify-between gap-4 p-5">
+      <div className="page-band">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Governance console / 治理控制台</p>
+          <p className="section-kicker">Governance console / 治理控制台</p>
           <h1 className="page-heading mt-1">Governance / 治理</h1>
           <p className="page-subtitle">Trace, eval, metrics, optimization loop. 追踪、评估、指标和优化闭环。</p>
         </div>
@@ -463,7 +463,7 @@ export default function GovernancePage() {
         <MetricCard title="Avg Runtime / 平均运行时长" value={`${Math.round(metrics.average_duration_ms ?? 0)} ms`} />
       </section>
       {runReport ? (
-        <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+        <section className="section-panel">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-sm font-semibold text-ink">Run Account / 运行账户</h2>
             <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">
@@ -483,8 +483,8 @@ export default function GovernancePage() {
             <CostStat label="Avg run / 平均运行" value={`${Math.round(runReport.average_run_duration_ms)} ms`} />
           </div>
           <div className="mt-4 overflow-hidden rounded-sm border border-line">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-field text-xs uppercase text-slate-600">
+            <table className="data-table">
+              <thead>
                 <tr>
                   <th className="px-3 py-2">Status / 状态</th>
                   <th className="px-3 py-2">Count / 数量</th>
@@ -495,7 +495,7 @@ export default function GovernancePage() {
                 {Object.entries(runReport.status_counts)
                   .filter(([, count]) => count > 0)
                   .map(([status, count]) => (
-                    <tr key={status} className="border-t border-line">
+                    <tr key={status}>
                       <td className="px-3 py-2 font-medium text-ink">{status}</td>
                       <td className="px-3 py-2 text-slate-700">{count}</td>
                       <td className="px-3 py-2 text-slate-700">{runQueueLabel(status)}</td>
@@ -506,8 +506,8 @@ export default function GovernancePage() {
           </div>
           {runReport.recovery_queue.length > 0 ? (
             <div className="mt-4 overflow-hidden rounded-sm border border-line">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-field text-xs uppercase text-slate-600">
+              <table className="data-table">
+                <thead>
                   <tr>
                     <th className="px-3 py-2">Run / 运行</th>
                     <th className="px-3 py-2">Reason / 原因</th>
@@ -516,7 +516,7 @@ export default function GovernancePage() {
                 </thead>
                 <tbody>
                   {runReport.recovery_queue.slice(0, 6).map((item) => (
-                    <tr key={item.run_id} className="border-t border-line">
+                    <tr key={item.run_id}>
                       <td className="break-all px-3 py-2 font-medium text-ink">{item.run_id}</td>
                       <td className="px-3 py-2 text-slate-700">{item.failure_reason_code}</td>
                       <td className="px-3 py-2 text-slate-700">{item.recommended_action_code}</td>
@@ -528,8 +528,8 @@ export default function GovernancePage() {
           ) : null}
           {runReport.run_items.length > 0 ? (
             <div className="mt-4 overflow-hidden rounded-sm border border-line">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-field text-xs uppercase text-slate-600">
+              <table className="data-table">
+                <thead>
                   <tr>
                     <th className="px-3 py-2">Severity / 严重度</th>
                     <th className="px-3 py-2">Code / 代码</th>
@@ -539,7 +539,7 @@ export default function GovernancePage() {
                 </thead>
                 <tbody>
                   {runReport.run_items.map((item) => (
-                    <tr key={item.code} className="border-t border-line">
+                    <tr key={item.code}>
                       <td className="px-3 py-2 text-slate-700">{item.severity}</td>
                       <td className="px-3 py-2 font-medium text-ink">{item.code}</td>
                       <td className="px-3 py-2 text-slate-700">{item.count}</td>
@@ -553,7 +553,7 @@ export default function GovernancePage() {
         </section>
       ) : null}
       {qualityReport ? (
-        <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+        <section className="section-panel">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-sm font-semibold text-ink">Quality Account / 质量账户</h2>
             <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">
@@ -580,8 +580,8 @@ export default function GovernancePage() {
           </div>
           {qualityReport.failed_node_counts.length > 0 ? (
             <div className="mt-4 overflow-hidden rounded-sm border border-line">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-field text-xs uppercase text-slate-600">
+              <table className="data-table">
+                <thead>
                   <tr>
                     <th className="px-3 py-2">Node / 节点</th>
                     <th className="px-3 py-2">Failures / 失败数</th>
@@ -590,7 +590,7 @@ export default function GovernancePage() {
                 </thead>
                 <tbody>
                   {qualityReport.failed_node_counts.slice(0, 6).map((item) => (
-                    <tr key={item.node_id} className="border-t border-line">
+                    <tr key={item.node_id}>
                       <td className="break-all px-3 py-2 font-medium text-ink">{item.node_id}</td>
                       <td className="px-3 py-2 text-slate-700">{item.failed_trace_count}</td>
                       <td className="px-3 py-2 text-slate-700">
@@ -606,8 +606,8 @@ export default function GovernancePage() {
           ) : null}
           {qualityReport.quality_items.length > 0 ? (
             <div className="mt-4 overflow-hidden rounded-sm border border-line">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-field text-xs uppercase text-slate-600">
+              <table className="data-table">
+                <thead>
                   <tr>
                     <th className="px-3 py-2">Severity / 严重度</th>
                     <th className="px-3 py-2">Code / 代码</th>
@@ -617,7 +617,7 @@ export default function GovernancePage() {
                 </thead>
                 <tbody>
                   {qualityReport.quality_items.map((item) => (
-                    <tr key={item.code} className="border-t border-line">
+                    <tr key={item.code}>
                       <td className="px-3 py-2 text-slate-700">{item.severity}</td>
                       <td className="px-3 py-2 font-medium text-ink">{item.code}</td>
                       <td className="px-3 py-2 text-slate-700">{item.count}</td>
@@ -631,7 +631,7 @@ export default function GovernancePage() {
         </section>
       ) : null}
       {costReport ? (
-        <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+        <section className="section-panel">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-sm font-semibold text-ink">Cost Account / 成本账户</h2>
             <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">
@@ -652,8 +652,8 @@ export default function GovernancePage() {
           </div>
           {costReport.node_costs.length > 0 ? (
             <div className="mt-4 overflow-hidden rounded-sm border border-line">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-field text-xs uppercase text-slate-600">
+              <table className="data-table">
+                <thead>
                   <tr>
                     <th className="px-3 py-2">Node / 节点</th>
                     <th className="px-3 py-2">Traces / 追踪</th>
@@ -664,7 +664,7 @@ export default function GovernancePage() {
                 </thead>
                 <tbody>
                   {costReport.node_costs.slice(0, 6).map((item) => (
-                    <tr key={item.node_id} className="border-t border-line">
+                    <tr key={item.node_id}>
                       <td className="break-all px-3 py-2 font-medium text-ink">{item.node_id}</td>
                       <td className="px-3 py-2 text-slate-700">{item.trace_count}</td>
                       <td className="px-3 py-2 text-slate-700">{item.estimated_total_tokens.toLocaleString()}</td>
@@ -678,8 +678,8 @@ export default function GovernancePage() {
           ) : null}
           {costReport.cost_items.length > 0 ? (
             <div className="mt-4 overflow-hidden rounded-sm border border-line">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-field text-xs uppercase text-slate-600">
+              <table className="data-table">
+                <thead>
                   <tr>
                     <th className="px-3 py-2">Code / 代码</th>
                     <th className="px-3 py-2">Count / 数量</th>
@@ -688,7 +688,7 @@ export default function GovernancePage() {
                 </thead>
                 <tbody>
                   {costReport.cost_items.map((item) => (
-                    <tr key={item.code} className="border-t border-line">
+                    <tr key={item.code}>
                       <td className="px-3 py-2 font-medium text-ink">{item.code}</td>
                       <td className="px-3 py-2 text-slate-700">{item.count.toLocaleString()}</td>
                       <td className="px-3 py-2 text-slate-700">{item.message}</td>
@@ -701,7 +701,7 @@ export default function GovernancePage() {
         </section>
       ) : null}
       {retentionReport ? (
-        <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+        <section className="section-panel">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-sm font-semibold text-ink">Retention Account / 保留账户</h2>
             <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">
@@ -721,8 +721,8 @@ export default function GovernancePage() {
             <CostStat label="Sample cap / 样本上限" value={retentionReport.policy.sample_limit} />
           </div>
           <div className="mt-4 overflow-hidden rounded-sm border border-line">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-field text-xs uppercase text-slate-600">
+            <table className="data-table">
+              <thead>
                 <tr>
                   <th className="px-3 py-2">Category / 类别</th>
                   <th className="px-3 py-2">Count / 数量</th>
@@ -732,7 +732,7 @@ export default function GovernancePage() {
               </thead>
               <tbody>
                 {retentionReport.retention_items.map((item) => (
-                  <tr key={item.category} className="border-t border-line align-top">
+                  <tr key={item.category}>
                     <td className="break-all px-3 py-2 font-medium text-ink">{item.category}</td>
                     <td className="px-3 py-2 text-slate-700">{item.count}</td>
                     <td className="px-3 py-2 text-slate-700">{item.recommendation}</td>
@@ -750,7 +750,7 @@ export default function GovernancePage() {
               <label className="block">
                 <span className="mb-1 block text-xs uppercase text-slate-500">Reason / 原因</span>
                 <input
-                  className="w-full rounded-md border border-line px-3 py-2 text-sm"
+                  className="control-input w-full"
                   value={retentionReason}
                   onChange={(event) => setRetentionReason(event.target.value)}
                 />
@@ -765,7 +765,7 @@ export default function GovernancePage() {
               </label>
               <div className="flex self-end gap-2">
                 <button
-                  className="rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-ink disabled:opacity-50"
+                  className="control-button"
                   disabled={retentionApplying}
                   onClick={() => applyRetention(true)}
                   type="button"
@@ -773,7 +773,7 @@ export default function GovernancePage() {
                   {retentionApplying ? "Running... / 运行中..." : "Dry Run / 试运行"}
                 </button>
                 <button
-                  className="rounded-md bg-accent px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+                  className="control-button-primary"
                   disabled={retentionApplying || !retentionSnapshotAcknowledged || !retentionReason.trim()}
                   onClick={() => applyRetention(false)}
                   type="button"
@@ -799,7 +799,7 @@ export default function GovernancePage() {
         </section>
       ) : null}
       {riskReport ? (
-        <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+        <section className="section-panel">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-sm font-semibold text-ink">Risk Account / 风险账户</h2>
             <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">
@@ -814,8 +814,8 @@ export default function GovernancePage() {
           </div>
           {riskReport.risk_items.length > 0 ? (
             <div className="mt-4 overflow-hidden rounded-sm border border-line">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-field text-xs uppercase text-slate-600">
+              <table className="data-table">
+                <thead>
                   <tr>
                     <th className="px-3 py-2">Severity / 严重度</th>
                     <th className="px-3 py-2">Code / 代码</th>
@@ -825,7 +825,7 @@ export default function GovernancePage() {
                 </thead>
                 <tbody>
                   {riskReport.risk_items.map((item) => (
-                    <tr key={item.code} className="border-t border-line">
+                    <tr key={item.code}>
                       <td className="px-3 py-2 text-slate-700">{item.severity}</td>
                       <td className="px-3 py-2 font-medium text-ink">{item.code}</td>
                       <td className="px-3 py-2 text-slate-700">{item.count}</td>
@@ -838,7 +838,7 @@ export default function GovernancePage() {
           ) : null}
         </section>
       ) : null}
-      <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+      <section className="section-panel">
         <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-ink">
           <BarChart3 className="h-4 w-4 text-accent" aria-hidden />
           Quality Signals / 质量信号
@@ -865,12 +865,12 @@ export default function GovernancePage() {
       {repairPlan ? (
         <section>
           <h2 className="mb-3 text-sm font-semibold text-ink">Package Repair Plan / 包修复计划</h2>
-          <div className="mb-4 rounded-md border border-line bg-white p-4">
+          <div className="section-panel mb-4">
             <div className="grid gap-3 md:grid-cols-[1fr_2fr_auto]">
               <label className="block">
                 <span className="mb-1 block text-xs uppercase text-slate-500">Target version / 目标版本</span>
                 <input
-                  className="w-full rounded-md border border-line px-3 py-2 text-sm"
+                  className="control-input w-full"
                   value={repairTargetVersion}
                   onChange={(event) => setRepairTargetVersion(event.target.value)}
                 />
@@ -878,14 +878,14 @@ export default function GovernancePage() {
               <label className="block">
                 <span className="mb-1 block text-xs uppercase text-slate-500">Reason / 原因</span>
                 <input
-                  className="w-full rounded-md border border-line px-3 py-2 text-sm"
+                  className="control-input w-full"
                   value={repairReason}
                   onChange={(event) => setRepairReason(event.target.value)}
                 />
               </label>
               <div className="flex self-end gap-2">
                 <button
-                  className="rounded-md border border-line px-4 py-2 text-sm font-medium text-ink disabled:opacity-50"
+                  className="control-button"
                   disabled={repairPreviewing || !repairTargetVersion.trim() || selectedRepairOperationIds.length === 0}
                   onClick={previewRepairCandidate}
                   type="button"
@@ -893,7 +893,7 @@ export default function GovernancePage() {
                   {repairPreviewing ? "Previewing... / 预览中..." : "Preview / 预览"}
                 </button>
                 <button
-                  className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                  className="control-button-primary"
                   disabled={repairApplying || !repairTargetVersion.trim() || selectedRepairOperationIds.length === 0}
                   onClick={applyRepairCandidate}
                   type="button"
@@ -903,8 +903,8 @@ export default function GovernancePage() {
               </div>
             </div>
             <div className="mt-4 overflow-hidden rounded-sm border border-line">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-field text-xs uppercase text-slate-600">
+              <table className="data-table">
+                <thead>
                   <tr>
                     <th className="px-3 py-2">Apply / 应用</th>
                     <th className="px-3 py-2">Operation / 操作</th>
@@ -914,7 +914,7 @@ export default function GovernancePage() {
                 </thead>
                 <tbody>
                   {repairPlan.operations.map((operation) => (
-                    <tr key={operation.operation_id} className="border-t border-line align-top">
+                    <tr key={operation.operation_id}>
                       <td className="px-3 py-2">
                         <input
                           checked={selectedRepairOperationIds.includes(operation.operation_id)}
@@ -957,8 +957,8 @@ export default function GovernancePage() {
 
 function MetricCard({ title, value }: { title: string; value: string }) {
   return (
-    <div className="rounded-md border border-line bg-white p-4">
-      <p className="text-xs uppercase text-slate-500">{title}</p>
+    <div className="metric-card">
+      <p className="metric-label">{title}</p>
       <p className="mt-2 text-2xl font-semibold text-ink">{value}</p>
     </div>
   );
@@ -966,18 +966,18 @@ function MetricCard({ title, value }: { title: string; value: string }) {
 
 function RiskStat({ label, value }: { label: string; value: number }) {
   return (
-    <div>
-      <p className="text-xs uppercase text-slate-500">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-ink">{value}</p>
+    <div className="metric-card bg-[#fbfcfd]">
+      <p className="metric-label">{label}</p>
+      <p className="metric-value">{value}</p>
     </div>
   );
 }
 
 function CostStat({ label, value }: { label: string; value: number | string }) {
   return (
-    <div>
-      <p className="text-xs uppercase text-slate-500">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-ink">{value}</p>
+    <div className="metric-card bg-[#fbfcfd]">
+      <p className="metric-label">{label}</p>
+      <p className="metric-value">{value}</p>
     </div>
   );
 }

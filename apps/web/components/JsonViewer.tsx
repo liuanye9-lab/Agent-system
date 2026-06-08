@@ -4,7 +4,7 @@ type JsonViewerProps = {
 
 export function JsonViewer({ data }: JsonViewerProps) {
   return (
-    <pre className="max-h-[520px] overflow-auto rounded-md border border-line bg-white p-4 text-xs leading-5 text-slate-800">
+    <pre className="code-panel">
       {JSON.stringify(data, null, 2)}
     </pre>
   );

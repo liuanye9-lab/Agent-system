@@ -239,10 +239,10 @@ export default function RunDetailPage() {
   return (
     <div className="grid gap-6 xl:grid-cols-[420px_1fr]">
       <section className="space-y-4">
-        <div className="surface p-5">
+        <div className="section-panel">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Runtime operation / 运行操作</p>
+              <p className="section-kicker">Runtime operation / 运行操作</p>
               <h1 className="page-heading mt-1">Run Detail / 运行详情</h1>
               <p className="page-subtitle break-all">{run.run_id}</p>
             </div>
@@ -257,7 +257,7 @@ export default function RunDetailPage() {
         </div>
         {error ? <p className="surface border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p> : null}
         {run.status === "paused" ? (
-          <div className="surface p-5">
+          <div className="section-panel">
             <h2 className="text-sm font-semibold text-ink">Approval Required / 需要审批</h2>
             <p className="mt-1 text-sm text-slate-600">
               Current node / 当前节点: {run.current_node_id ?? "unknown"}
@@ -268,7 +268,7 @@ export default function RunDetailPage() {
                 <textarea
                   value={approvalPayloadText}
                   onChange={(event) => setApprovalPayloadText(event.target.value)}
-                  className="min-h-28 w-full rounded-md border border-line bg-white p-3 font-mono text-xs text-ink shadow-sm focus:border-accent focus:ring-2 focus:ring-accent/15"
+                  className="control-textarea min-h-28 font-mono text-xs"
                   spellCheck={false}
                 />
               </label>
@@ -320,14 +320,14 @@ export default function RunDetailPage() {
           </div>
         ) : null}
         {canCancel ? (
-          <div className="surface p-5">
+          <div className="section-panel">
             <h2 className="text-sm font-semibold text-ink">Cancel / 取消</h2>
             <label className="mt-3 block">
               <span className="mb-2 block text-xs uppercase text-slate-500">Reason / 原因</span>
               <textarea
                 value={cancelReason}
                 onChange={(event) => setCancelReason(event.target.value)}
-                className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm shadow-sm focus:border-accent focus:ring-2 focus:ring-accent/15"
+                className="control-textarea min-h-20"
               />
             </label>
             <button
@@ -342,14 +342,14 @@ export default function RunDetailPage() {
           </div>
         ) : null}
         {canRerun ? (
-          <div className="surface p-5">
+          <div className="section-panel">
             <h2 className="text-sm font-semibold text-ink">Rerun / 重跑</h2>
             <label className="mt-3 block">
               <span className="mb-2 block text-xs uppercase text-slate-500">Reason / 原因</span>
               <textarea
                 value={rerunReason}
                 onChange={(event) => setRerunReason(event.target.value)}
-                className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm shadow-sm focus:border-accent focus:ring-2 focus:ring-accent/15"
+                className="control-textarea min-h-20"
               />
             </label>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
@@ -427,9 +427,9 @@ export default function RunDetailPage() {
         </section>
       </section>
       <section className="space-y-4">
-        <div className="surface flex flex-wrap items-center justify-between gap-3 p-5">
+        <div className="page-band">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Trace account / 追踪账户</p>
+            <p className="section-kicker">Trace account / 追踪账户</p>
             <h2 className="mt-1 text-base font-semibold text-ink">Trace Timeline / 追踪时间线</h2>
           </div>
           <span className="status-pill">{traces.length} traces / 追踪</span>
@@ -462,7 +462,7 @@ function ShadowComparisonPanel({
   onSubmit: () => void;
 }) {
   return (
-    <div className="surface p-5">
+    <div className="section-panel">
       <h2 className="text-sm font-semibold text-ink">Shadow Comparison / 影子运行对比</h2>
       <div className="mt-3 space-y-3">
         <label className="block text-xs uppercase text-slate-500" htmlFor="expected-output">
@@ -472,14 +472,14 @@ function ShadowComparisonPanel({
           id="expected-output"
           value={expectedOutputText}
           onChange={(event) => onExpectedOutputChange(event.target.value)}
-          className="min-h-32 w-full rounded-md border border-line bg-white p-3 font-mono text-xs text-ink shadow-sm focus:border-accent focus:ring-2 focus:ring-accent/15"
+          className="control-textarea min-h-32 font-mono text-xs"
         />
         <label className="block">
           <span className="mb-2 block text-xs uppercase text-slate-500">Notes / 备注</span>
           <textarea
             value={comparisonNotes}
             onChange={(event) => onComparisonNotesChange(event.target.value)}
-            className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm shadow-sm focus:border-accent focus:ring-2 focus:ring-accent/15"
+            className="control-textarea min-h-20"
           />
         </label>
         <div className="flex flex-wrap items-center gap-3">
@@ -530,7 +530,7 @@ function ShadowComparisonPanel({
 function DiagnosticsPanel({ diagnostics }: { diagnostics: RunDiagnostics }) {
   const traceEntries = Object.entries(diagnostics.trace_counts);
   return (
-    <div className="surface p-5">
+    <div className="section-panel">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h2 className="text-sm font-semibold text-ink">Diagnostics / 诊断</h2>
@@ -611,15 +611,15 @@ function RunFact({ label, value }: { label: string; value: string }) {
 function runStatusClass(status: string) {
   switch (status) {
     case "completed":
-      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+      return "status-success";
     case "failed":
     case "rejected":
     case "canceled":
-      return "border-red-200 bg-red-50 text-red-700";
+      return "status-danger";
     case "paused":
-      return "border-amber-200 bg-amber-50 text-amber-700";
+      return "status-warning";
     case "running":
-      return "border-[#b7d7dc] bg-[#e6f1f3] text-accent";
+      return "status-accent";
     default:
       return "border-line bg-field text-slate-700";
   }
