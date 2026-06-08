@@ -56,17 +56,24 @@ def _repository_check(repository: WorkflowRepository) -> dict[str, Any]:
 
 
 def _auth_configuration_check() -> dict[str, Any]:
+    problems: list[str] = []
     if not settings.allow_dev_actor_headers and settings.uses_default_auth_secret():
+        problems.append("AGENT_WORKFLOW_AUTH_SECRET_KEY must be changed when dev actor headers are disabled")
+    if not settings.allow_dev_actor_headers and not settings.auth_users_json:
+        problems.append("AGENT_WORKFLOW_AUTH_USERS_JSON is required when dev actor headers are disabled")
+
+    if problems:
         return {
             "name": "auth_configuration",
             "status": "failed",
-            "message": "AGENT_WORKFLOW_AUTH_SECRET_KEY must be changed when dev actor headers are disabled",
+            "message": "; ".join(problems),
         }
     return {
         "name": "auth_configuration",
         "status": "passed",
         "dev_actor_headers_enabled": settings.allow_dev_actor_headers,
         "default_secret_in_use": settings.uses_default_auth_secret(),
+        "configured_auth_users": settings.auth_users_json is not None,
     }
 
 

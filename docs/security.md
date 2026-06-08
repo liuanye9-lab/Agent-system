@@ -13,7 +13,7 @@ Write operations must go through `ApprovalPolicy`. Any tool with `write_requires
 
 Approval API calls should use `Authorization: Bearer <token>`. Tokens are HMAC-signed by `AGENT_WORKFLOW_AUTH_SECRET_KEY`, carry actor id, role, scopes, issue time, and expiry, and can be issued by `POST /api/auth/token`. Approval requires the `workflow:approve` scope before node-level role authorization is checked.
 
-Local development can still allow `X-Actor-Id` and `X-Actor-Role` headers when `AGENT_WORKFLOW_ALLOW_DEV_ACTOR_HEADERS=true`. Production-like environments should set it to `false`. The actor role must match the paused node tool policy `allowed_roles`, unless the role is `workflow-admin`. Actor identity is copied into the approval payload for auditability.
+Local development can still allow `X-Actor-Id` and `X-Actor-Role` headers when `AGENT_WORKFLOW_ALLOW_DEV_ACTOR_HEADERS=true`. Production-like environments should set it to `false` and must provide `AGENT_WORKFLOW_AUTH_USERS_JSON`; otherwise `/ready` fails and token issuance will not fall back to built-in local users. The actor role must match the paused node tool policy `allowed_roles`, unless the role is `workflow-admin`. Actor identity is copied into the approval payload for auditability.
 
 Approval decisions write `run_approval` audit events with actor, run, workflow version, approval result, and reason.
 

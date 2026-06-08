@@ -155,9 +155,11 @@ def test_ready_fails_when_production_auth_uses_default_secret() -> None:
     app.dependency_overrides[dependencies.get_repository] = lambda: repository
     original_allow_dev_headers = settings.allow_dev_actor_headers
     original_secret = settings.auth_secret_key
+    original_auth_users_json = settings.auth_users_json
     try:
         object.__setattr__(settings, "allow_dev_actor_headers", False)
         object.__setattr__(settings, "auth_secret_key", DEFAULT_AUTH_SECRET_KEY)
+        object.__setattr__(settings, "auth_users_json", None)
         client = TestClient(app)
 
         response = client.get("/ready")
@@ -166,10 +168,32 @@ def test_ready_fails_when_production_auth_uses_default_secret() -> None:
         checks = {check["name"]: check for check in response.json()["checks"]}
         assert checks["auth_configuration"]["status"] == "failed"
         assert "AGENT_WORKFLOW_AUTH_SECRET_KEY" in checks["auth_configuration"]["message"]
+        assert "AGENT_WORKFLOW_AUTH_USERS_JSON" in checks["auth_configuration"]["message"]
     finally:
         object.__setattr__(settings, "allow_dev_actor_headers", original_allow_dev_headers)
         object.__setattr__(settings, "auth_secret_key", original_secret)
+        object.__setattr__(settings, "auth_users_json", original_auth_users_json)
         app.dependency_overrides.clear()
+
+
+def test_token_route_rejects_builtin_users_when_dev_actor_headers_are_disabled() -> None:
+    original_allow_dev_headers = settings.allow_dev_actor_headers
+    original_secret = settings.auth_secret_key
+    original_auth_users_json = settings.auth_users_json
+    try:
+        object.__setattr__(settings, "allow_dev_actor_headers", False)
+        object.__setattr__(settings, "auth_secret_key", "production-secret")
+        object.__setattr__(settings, "auth_users_json", None)
+        client = TestClient(app)
+
+        response = client.post("/api/auth/token", json={"username": "admin", "password": "admin"})
+
+        assert response.status_code == 503
+        assert "AGENT_WORKFLOW_AUTH_USERS_JSON" in response.json()["detail"]
+    finally:
+        object.__setattr__(settings, "allow_dev_actor_headers", original_allow_dev_headers)
+        object.__setattr__(settings, "auth_secret_key", original_secret)
+        object.__setattr__(settings, "auth_users_json", original_auth_users_json)
 
 
 def test_ready_reports_invalid_real_llm_configuration_without_secret_values() -> None:

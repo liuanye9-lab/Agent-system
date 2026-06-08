@@ -50,6 +50,12 @@ def _load_auth_users() -> dict[str, dict[str, Any]]:
             raise HTTPException(status_code=500, detail="AGENT_WORKFLOW_AUTH_USERS_JSON must be an object")
         return loaded
 
+    if not settings.allow_dev_actor_headers:
+        raise HTTPException(
+            status_code=503,
+            detail="AGENT_WORKFLOW_AUTH_USERS_JSON is required when developer actor headers are disabled",
+        )
+
     return {
         "admin": {
             "password": "admin",
