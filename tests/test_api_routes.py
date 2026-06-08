@@ -1723,6 +1723,35 @@ def test_api_write_run_and_eval_routes_require_scopes() -> None:
         app.dependency_overrides.clear()
 
 
+def test_api_workflow_run_forwards_actor_role_to_tool_policy_checks() -> None:
+    repository = MemoryWorkflowRepository()
+    app.dependency_overrides[dependencies.get_repository] = lambda: repository
+    try:
+        client = TestClient(app)
+        assert import_workflow(client, load_example_payload()).status_code == 200
+
+        operator = ActorContext(
+            actor_id="operator-1",
+            role="workflow-operator",
+            display_name="Workflow Operator",
+            scopes=["workflow:run"],
+        )
+        run = client.post(
+            "/api/workflows/new-product-launch/runs",
+            headers=actor_token_headers(operator),
+            json={"input_payload": {"product": "AI workflow platform"}},
+        )
+
+        assert run.status_code == 200
+        assert run.json()["status"] == "failed"
+        assert "actor role is not allowed" in run.json()["traces"][0]["error"]
+        persisted_run = repository.get_run(run.json()["run_id"])
+        assert persisted_run is not None
+        assert "mock-define-launch-goal-tool" in (persisted_run.traces[0].error or "")
+    finally:
+        app.dependency_overrides.clear()
+
+
 def test_api_runs_evals_against_candidate_workflow_version() -> None:
     repository = MemoryWorkflowRepository()
     app.dependency_overrides[dependencies.get_repository] = lambda: repository

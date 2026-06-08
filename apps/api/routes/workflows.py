@@ -1026,7 +1026,7 @@ def run_workflow(
 def _tool_execution_context(actor: ActorContext) -> ToolExecutionContext:
     return ToolExecutionContext(
         actor_id=actor.actor_id,
-        actor_role=None,
+        actor_role=actor.role,
         actor_scopes=tuple(actor.scopes),
     )
 

@@ -92,7 +92,12 @@ class MockToolRegistry:
             or tool.requires_approval
         ) and not context.approval_granted:
             raise PermissionError(f"tool requires approval before execution: {tool.tool_id}")
-        if context.actor_role and tool.allowed_roles and context.actor_role not in tool.allowed_roles:
+        if (
+            context.actor_role
+            and context.actor_role != "workflow-admin"
+            and tool.allowed_roles
+            and context.actor_role not in tool.allowed_roles
+        ):
             raise PermissionError(f"actor role is not allowed to execute tool: {tool.tool_id}")
         missing_scopes = set(tool.required_scopes) - set(context.actor_scopes)
         if missing_scopes:

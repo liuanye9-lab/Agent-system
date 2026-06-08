@@ -65,6 +65,31 @@ def test_tool_registry_executes_write_tool_with_approval_context() -> None:
     assert result["sandbox"]["node_id"] == "write-node"
 
 
+def test_tool_registry_blocks_actor_role_outside_allowed_roles() -> None:
+    registry = MockToolRegistry()
+    registry.register(make_tool_policy())
+
+    with pytest.raises(PermissionError, match="actor role is not allowed"):
+        registry.execute(
+            "tool-1",
+            {"payload": {}},
+            context=ToolExecutionContext(actor_role="workflow-operator"),
+        )
+
+
+def test_tool_registry_allows_workflow_admin_to_execute_policy_managed_tools() -> None:
+    registry = MockToolRegistry()
+    registry.register(make_tool_policy())
+
+    result = registry.execute(
+        "tool-1",
+        {"payload": {}},
+        context=ToolExecutionContext(actor_role="workflow-admin"),
+    )
+
+    assert result["status"] == "mock_success"
+
+
 def test_tool_registry_validates_tool_input_schema() -> None:
     registry = MockToolRegistry()
     registry.register(make_tool_policy())
