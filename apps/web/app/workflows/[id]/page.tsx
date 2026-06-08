@@ -6,15 +6,57 @@ import Link from "next/link";
 import { Play, Rocket } from "lucide-react";
 import { apiFetch, getLocalAuthHeaders } from "../../../lib/api";
 import { JsonViewer } from "../../../components/JsonViewer";
+import { WorkflowGraph } from "../../../components/WorkflowGraph";
+
+type ProcessNode = {
+  node_id: string;
+  name: string;
+  node_type: string;
+  owner_role: string;
+  description?: string;
+  done_condition?: string;
+  requires_approval?: boolean;
+  input_contract_id: string;
+  output_contract_id: string;
+  tool_ids: string[];
+};
+
+type ProcessSpec = {
+  nodes: ProcessNode[];
+  edges: Array<{
+    source_node_id: string;
+    target_node_id: string;
+    condition?: string | null;
+    edge_type?: string;
+  }>;
+  entry_node_id: string;
+  terminal_node_ids: string[];
+};
+
+type DataContract = {
+  contract_id: string;
+  name: string;
+  [key: string]: unknown;
+};
+
+type ToolPolicy = {
+  tool_id: string;
+  name: string;
+  permission_level: string;
+  risk_level: string;
+  adapter?: string;
+  requires_approval?: boolean;
+  [key: string]: unknown;
+};
 
 type WorkflowPackage = {
   workflow_id: string;
   name: string;
   version: string;
   problem_spec: unknown;
-  process_spec: { nodes: Array<{ node_id: string; name: string; node_type: string; owner_role: string }> };
-  data_contracts: unknown;
-  tool_policies: unknown;
+  process_spec: ProcessSpec;
+  data_contracts: DataContract[];
+  tool_policies: ToolPolicy[];
   agent_specs: unknown;
   eval_specs: unknown;
 };
@@ -230,28 +272,30 @@ export default function WorkflowDetailPage() {
     }
   }
 
-  if (error) return <p className="text-sm text-red-700">{error}</p>;
-  if (!workflow) return <p className="text-sm text-slate-600">Loading workflow... / 正在加载工作流...</p>;
+  if (error) return <p className="surface border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>;
+  if (!workflow) return <p className="surface p-4 text-sm text-slate-600">Loading workflow... / 正在加载工作流...</p>;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="surface flex flex-wrap items-center justify-between gap-4 p-5">
         <div>
-          <h1 className="text-2xl font-semibold text-ink">{workflow.name}</h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Workflow package / 工作流包</p>
+          <h1 className="page-heading mt-1">{workflow.name}</h1>
+          <p className="page-subtitle">
             {workflow.workflow_id} · v{workflow.version}
           </p>
         </div>
       </div>
       {run ? (
-        <div className="rounded-md border border-line bg-white p-4 text-sm text-slate-700">
+        <div className="surface p-4 text-sm text-slate-700">
           Run / 运行 {run.run_id} · v{run.workflow_version ?? "unknown"} · {run.status} · {run.shadow_mode ? "shadow / 影子" : "live / 正式"} ·{" "}
           <Link className="font-medium text-accent hover:underline" href={`/runs/${run.run_id}`}>
             Open run detail / 打开运行详情
           </Link>
         </div>
       ) : null}
-      <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+      <WorkflowGraph processSpec={workflow.process_spec} toolPolicies={workflow.tool_policies} dataContracts={workflow.data_contracts} />
+      <section className="surface p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-semibold text-ink">Run Launch / 启动运行</h2>
           <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">
@@ -263,7 +307,7 @@ export default function WorkflowDetailPage() {
             <label className="block">
               <span className="mb-2 block text-xs uppercase text-slate-500">Workflow Version / 工作流版本</span>
               <select
-                className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm"
+                className="control-input w-full"
                 value={selectedRunVersion}
                 onChange={(event) => selectRunVersion(event.target.value)}
               >
@@ -278,7 +322,7 @@ export default function WorkflowDetailPage() {
               <label className="block">
                 <span className="mb-2 block text-xs uppercase text-slate-500">Max Steps / 最大步数</span>
                 <input
-                  className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm"
+                  className="control-input w-full"
                   type="number"
                   min="1"
                   max="200"
@@ -289,7 +333,7 @@ export default function WorkflowDetailPage() {
               <label className="block">
                 <span className="mb-2 block text-xs uppercase text-slate-500">Max Retries / 最大重试</span>
                 <input
-                  className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm"
+                  className="control-input w-full"
                   type="number"
                   min="0"
                   max="5"
@@ -301,7 +345,7 @@ export default function WorkflowDetailPage() {
             <label className="block">
               <span className="mb-2 block text-xs uppercase text-slate-500">Idempotency Key / 幂等键</span>
               <input
-                className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm"
+                className="control-input w-full"
                 value={idempotencyKey}
                 onChange={(event) => setIdempotencyKey(event.target.value)}
               />
@@ -330,7 +374,7 @@ export default function WorkflowDetailPage() {
                 type="button"
                 onClick={runWorkflow}
                 disabled={runBusy || (!shadowMode && enforceReleaseReadiness && readiness?.live_ready === false)}
-                className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-[#0F5860] disabled:opacity-60"
+                className="control-button-primary"
               >
                 <Play className="h-4 w-4" aria-hidden />
                 {shadowMode ? "Run Shadow / 影子运行" : "Run Live / 正式运行"}
@@ -340,7 +384,7 @@ export default function WorkflowDetailPage() {
           <label className="block">
             <span className="mb-2 block text-xs uppercase text-slate-500">Input Payload JSON / 输入载荷 JSON</span>
             <textarea
-              className="min-h-64 w-full rounded-md border border-line bg-white p-3 font-mono text-xs text-ink"
+              className="min-h-64 w-full rounded-md border border-line bg-white p-3 font-mono text-xs text-ink shadow-sm focus:border-accent focus:ring-2 focus:ring-accent/15"
               value={inputPayloadText}
               onChange={(event) => setInputPayloadText(event.target.value)}
             />
@@ -375,29 +419,6 @@ export default function WorkflowDetailPage() {
           onPromote={() => promoteVersion(selectedRunVersion)}
         />
       ) : null}
-      <section>
-        <h2 className="mb-3 text-sm font-semibold text-ink">Process Nodes / 流程节点</h2>
-        <div className="overflow-hidden rounded-md border border-line bg-white shadow-sm">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-field text-xs uppercase text-slate-600">
-              <tr>
-                <th className="px-3 py-2">Node / 节点</th>
-                <th className="px-3 py-2">Type / 类型</th>
-                <th className="px-3 py-2">Owner / 负责人</th>
-              </tr>
-            </thead>
-            <tbody>
-              {workflow.process_spec.nodes.map((node) => (
-                <tr key={node.node_id} className="border-t border-line">
-                  <td className="px-3 py-2 font-medium text-ink">{node.name}</td>
-                  <td className="px-3 py-2 text-slate-700">{node.node_type}</td>
-                  <td className="px-3 py-2 text-slate-700">{node.owner_role}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
       <section>
         <h2 className="mb-3 text-sm font-semibold text-ink">Version History / 版本历史</h2>
         <div className="overflow-hidden rounded-md border border-line bg-white shadow-sm">
