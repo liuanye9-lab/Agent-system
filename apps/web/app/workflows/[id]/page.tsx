@@ -106,7 +106,7 @@ export default function WorkflowDetailPage() {
       resetVersionReviewState();
       setSelectedRunVersion(versionToSelect);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Failed to load workflow");
+      setError(caught instanceof Error ? caught.message : "Failed to load workflow / 加载工作流失败");
     }
   }, [resetVersionReviewState]);
 
@@ -141,7 +141,7 @@ export default function WorkflowDetailPage() {
         setReadiness(readinessResponse);
         setVersionDiff(diffResponse);
       })
-      .catch((caught) => setError(caught instanceof Error ? caught.message : "Failed to load release readiness"));
+      .catch((caught) => setError(caught instanceof Error ? caught.message : "Failed to load release readiness / 加载发布就绪状态失败"));
   }, [workflow, selectedRunVersion]);
 
   async function runWorkflow() {
@@ -150,11 +150,11 @@ export default function WorkflowDetailPage() {
     try {
       inputPayload = JSON.parse(inputPayloadText);
     } catch {
-      setError("Run input payload must be valid JSON");
+      setError("Run input payload must be valid JSON / 运行输入载荷必须是有效 JSON");
       return;
     }
     if (!inputPayload || typeof inputPayload !== "object" || Array.isArray(inputPayload)) {
-      setError("Run input payload must be a JSON object");
+      setError("Run input payload must be a JSON object / 运行输入载荷必须是 JSON 对象");
       return;
     }
     setRunBusy(true);
@@ -175,7 +175,7 @@ export default function WorkflowDetailPage() {
       });
       setRun(response);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Failed to run workflow");
+      setError(caught instanceof Error ? caught.message : "Failed to run workflow / 运行工作流失败");
     } finally {
       setRunBusy(false);
     }
@@ -184,7 +184,7 @@ export default function WorkflowDetailPage() {
   async function promoteVersion(version: string) {
     if (!workflow) return;
     if (!promotionReason.trim()) {
-      setError("Promotion reason is required");
+      setError("Promotion reason is required / 提升原因必填");
       return;
     }
     setPromotingVersion(version);
@@ -204,7 +204,7 @@ export default function WorkflowDetailPage() {
       await loadWorkflow(workflow.workflow_id);
       setSelectedRunVersion(version);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Failed to promote version");
+      setError(caught instanceof Error ? caught.message : "Failed to promote version / 提升版本失败");
     } finally {
       setPromotingVersion(null);
     }
@@ -224,14 +224,14 @@ export default function WorkflowDetailPage() {
       );
       setEvalRunResults(results);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Failed to run version evals");
+      setError(caught instanceof Error ? caught.message : "Failed to run version evals / 运行版本评估失败");
     } finally {
       setEvalBusy(false);
     }
   }
 
   if (error) return <p className="text-sm text-red-700">{error}</p>;
-  if (!workflow) return <p className="text-sm text-slate-600">Loading workflow...</p>;
+  if (!workflow) return <p className="text-sm text-slate-600">Loading workflow... / 正在加载工作流...</p>;
 
   return (
     <div className="space-y-6">
@@ -245,15 +245,15 @@ export default function WorkflowDetailPage() {
       </div>
       {run ? (
         <div className="rounded-md border border-line bg-white p-4 text-sm text-slate-700">
-          Run {run.run_id} · v{run.workflow_version ?? "unknown"} · {run.status} · {run.shadow_mode ? "shadow" : "live"} ·{" "}
+          Run / 运行 {run.run_id} · v{run.workflow_version ?? "unknown"} · {run.status} · {run.shadow_mode ? "shadow / 影子" : "live / 正式"} ·{" "}
           <Link className="font-medium text-accent hover:underline" href={`/runs/${run.run_id}`}>
-            Open run detail
+            Open run detail / 打开运行详情
           </Link>
         </div>
       ) : null}
-      <section className="rounded-md border border-line bg-white p-4">
+      <section className="rounded-md border border-line bg-white p-5 shadow-sm">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold text-ink">Run Launch</h2>
+          <h2 className="text-sm font-semibold text-ink">Run Launch / 启动运行</h2>
           <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">
             v{selectedRunVersion || workflow.version}
           </span>
@@ -261,7 +261,7 @@ export default function WorkflowDetailPage() {
         <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
           <div className="space-y-3">
             <label className="block">
-              <span className="mb-2 block text-xs uppercase text-slate-500">Workflow Version</span>
+              <span className="mb-2 block text-xs uppercase text-slate-500">Workflow Version / 工作流版本</span>
               <select
                 className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm"
                 value={selectedRunVersion}
@@ -269,14 +269,14 @@ export default function WorkflowDetailPage() {
               >
                 {versions.map((version) => (
                   <option key={version.version} value={version.version}>
-                    {version.version === workflow.version ? `${version.version} (current)` : version.version}
+                    {version.version === workflow.version ? `${version.version} (current / 当前)` : version.version}
                   </option>
                 ))}
               </select>
             </label>
             <div className="grid gap-3 md:grid-cols-2">
               <label className="block">
-                <span className="mb-2 block text-xs uppercase text-slate-500">Max Steps</span>
+                <span className="mb-2 block text-xs uppercase text-slate-500">Max Steps / 最大步数</span>
                 <input
                   className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm"
                   type="number"
@@ -287,7 +287,7 @@ export default function WorkflowDetailPage() {
                 />
               </label>
               <label className="block">
-                <span className="mb-2 block text-xs uppercase text-slate-500">Max Retries</span>
+                <span className="mb-2 block text-xs uppercase text-slate-500">Max Retries / 最大重试</span>
                 <input
                   className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm"
                   type="number"
@@ -299,7 +299,7 @@ export default function WorkflowDetailPage() {
               </label>
             </div>
             <label className="block">
-              <span className="mb-2 block text-xs uppercase text-slate-500">Idempotency Key</span>
+              <span className="mb-2 block text-xs uppercase text-slate-500">Idempotency Key / 幂等键</span>
               <input
                 className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm"
                 value={idempotencyKey}
@@ -314,7 +314,7 @@ export default function WorkflowDetailPage() {
                   onChange={(event) => setShadowMode(event.target.checked)}
                   className="h-4 w-4 rounded border-line"
                 />
-                Shadow mode
+                Shadow mode / 影子模式
               </label>
               <label className="inline-flex items-center gap-2 text-sm text-slate-700">
                 <input
@@ -324,7 +324,7 @@ export default function WorkflowDetailPage() {
                   disabled={shadowMode}
                   className="h-4 w-4 rounded border-line"
                 />
-                Enforce readiness
+                Enforce readiness / 强制就绪检查
               </label>
               <button
                 type="button"
@@ -333,12 +333,12 @@ export default function WorkflowDetailPage() {
                 className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-[#0F5860] disabled:opacity-60"
               >
                 <Play className="h-4 w-4" aria-hidden />
-                {shadowMode ? "Run Shadow" : "Run Live"}
+                {shadowMode ? "Run Shadow / 影子运行" : "Run Live / 正式运行"}
               </button>
             </div>
           </div>
           <label className="block">
-            <span className="mb-2 block text-xs uppercase text-slate-500">Input Payload JSON</span>
+            <span className="mb-2 block text-xs uppercase text-slate-500">Input Payload JSON / 输入载荷 JSON</span>
             <textarea
               className="min-h-64 w-full rounded-md border border-line bg-white p-3 font-mono text-xs text-ink"
               value={inputPayloadText}
@@ -376,14 +376,14 @@ export default function WorkflowDetailPage() {
         />
       ) : null}
       <section>
-        <h2 className="mb-3 text-sm font-semibold text-ink">Process Nodes</h2>
-        <div className="overflow-hidden rounded-md border border-line bg-white">
+        <h2 className="mb-3 text-sm font-semibold text-ink">Process Nodes / 流程节点</h2>
+        <div className="overflow-hidden rounded-md border border-line bg-white shadow-sm">
           <table className="w-full text-left text-sm">
             <thead className="bg-field text-xs uppercase text-slate-600">
               <tr>
-                <th className="px-3 py-2">Node</th>
-                <th className="px-3 py-2">Type</th>
-                <th className="px-3 py-2">Owner</th>
+                <th className="px-3 py-2">Node / 节点</th>
+                <th className="px-3 py-2">Type / 类型</th>
+                <th className="px-3 py-2">Owner / 负责人</th>
               </tr>
             </thead>
             <tbody>
@@ -399,16 +399,16 @@ export default function WorkflowDetailPage() {
         </div>
       </section>
       <section>
-        <h2 className="mb-3 text-sm font-semibold text-ink">Version History</h2>
-        <div className="overflow-hidden rounded-md border border-line bg-white">
+        <h2 className="mb-3 text-sm font-semibold text-ink">Version History / 版本历史</h2>
+        <div className="overflow-hidden rounded-md border border-line bg-white shadow-sm">
           <table className="w-full text-left text-sm">
             <thead className="bg-field text-xs uppercase text-slate-600">
               <tr>
-                <th className="px-3 py-2">Version</th>
-                <th className="px-3 py-2">Name</th>
-                <th className="px-3 py-2">Created</th>
-                <th className="px-3 py-2">Updated</th>
-                <th className="px-3 py-2">Action</th>
+                <th className="px-3 py-2">Version / 版本</th>
+                <th className="px-3 py-2">Name / 名称</th>
+                <th className="px-3 py-2">Created / 创建时间</th>
+                <th className="px-3 py-2">Updated / 更新时间</th>
+                <th className="px-3 py-2">Action / 操作</th>
               </tr>
             </thead>
             <tbody>
@@ -420,7 +420,7 @@ export default function WorkflowDetailPage() {
                   <td className="px-3 py-2 text-slate-700">{new Date(version.updated_at).toLocaleString()}</td>
                   <td className="px-3 py-2">
                     {version.version === workflow.version ? (
-                      <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">Current</span>
+                      <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">Current / 当前</span>
                     ) : (
                       <button
                         type="button"
@@ -428,7 +428,7 @@ export default function WorkflowDetailPage() {
                         className="inline-flex items-center gap-1 rounded-md border border-line bg-white px-2 py-1 text-xs font-medium text-ink hover:border-accent disabled:opacity-60"
                       >
                         <Rocket className="h-3 w-3" aria-hidden />
-                        Review
+                        Review / 审查
                       </button>
                     )}
                   </td>
@@ -439,12 +439,12 @@ export default function WorkflowDetailPage() {
         </div>
       </section>
       <section className="grid gap-4 lg:grid-cols-2">
-        <JsonBlock title="Problem Spec" data={workflow.problem_spec} />
-        <JsonBlock title="Process Spec" data={workflow.process_spec} />
-        <JsonBlock title="Data Contracts" data={workflow.data_contracts} />
-        <JsonBlock title="Tool Policies" data={workflow.tool_policies} />
-        <JsonBlock title="Agent Specs" data={workflow.agent_specs} />
-        <JsonBlock title="Eval Specs" data={workflow.eval_specs} />
+        <JsonBlock title="Problem Spec / 问题规格" data={workflow.problem_spec} />
+        <JsonBlock title="Process Spec / 流程规格" data={workflow.process_spec} />
+        <JsonBlock title="Data Contracts / 数据契约" data={workflow.data_contracts} />
+        <JsonBlock title="Tool Policies / 工具策略" data={workflow.tool_policies} />
+        <JsonBlock title="Agent Specs / 智能体规格" data={workflow.agent_specs} />
+        <JsonBlock title="Eval Specs / 评估规格" data={workflow.eval_specs} />
       </section>
     </div>
   );
@@ -452,16 +452,16 @@ export default function WorkflowDetailPage() {
 
 function VersionReviewPanel({ diff }: { diff: WorkflowDiff }) {
   return (
-    <section className="rounded-md border border-line bg-white p-4">
+    <section className="rounded-md border border-line bg-white p-5 shadow-sm">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-sm font-semibold text-ink">Version Review</h2>
+          <h2 className="text-sm font-semibold text-ink">Version Review / 版本审查</h2>
           <p className="mt-1 text-sm text-slate-600">
             {diff.from_version} to {diff.to_version}
           </p>
         </div>
         <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">
-          {diff.change_count} changes
+          {diff.change_count} changes / 变更
         </span>
       </div>
       {diff.changes.length > 0 ? (
@@ -469,10 +469,10 @@ function VersionReviewPanel({ diff }: { diff: WorkflowDiff }) {
           <table className="w-full text-left text-sm">
             <thead className="bg-field text-xs uppercase text-slate-600">
               <tr>
-                <th className="px-3 py-2">Op</th>
-                <th className="px-3 py-2">Path</th>
-                <th className="px-3 py-2">From</th>
-                <th className="px-3 py-2">To</th>
+                <th className="px-3 py-2">Op / 操作</th>
+                <th className="px-3 py-2">Path / 路径</th>
+                <th className="px-3 py-2">From / 原值</th>
+                <th className="px-3 py-2">To / 新值</th>
               </tr>
             </thead>
             <tbody>
@@ -488,7 +488,7 @@ function VersionReviewPanel({ diff }: { diff: WorkflowDiff }) {
           </table>
         </div>
       ) : (
-        <p className="rounded-sm bg-field p-3 text-sm text-slate-600">No package changes detected.</p>
+        <p className="rounded-sm bg-field p-3 text-sm text-slate-600">No package changes detected. 未检测到包变更。</p>
       )}
     </section>
   );
@@ -496,11 +496,11 @@ function VersionReviewPanel({ diff }: { diff: WorkflowDiff }) {
 
 function ReleaseReadinessPanel({ readiness }: { readiness: ReleaseReadiness }) {
   return (
-    <section className="rounded-md border border-line bg-white p-4">
+    <section className="rounded-md border border-line bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-ink">Live Readiness</h2>
+        <h2 className="text-sm font-semibold text-ink">Live Readiness / 正式发布就绪</h2>
         <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">
-          {readiness.live_ready ? "ready" : "blocked"}
+          {readiness.live_ready ? "ready / 就绪" : "blocked / 受阻"}
         </span>
       </div>
       {readiness.blocking_reasons.length > 0 ? (
@@ -532,16 +532,16 @@ function VersionEvalPanel({
   onRun: () => void;
 }) {
   return (
-    <section className="rounded-md border border-line bg-white p-4">
+    <section className="rounded-md border border-line bg-white p-5 shadow-sm">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-ink">Version Evals</h2>
+        <h2 className="text-sm font-semibold text-ink">Version Evals / 版本评估</h2>
         <button
           type="button"
           onClick={onRun}
           disabled={busy}
           className="rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-ink hover:border-accent disabled:opacity-60"
         >
-          {busy ? "Running..." : `Run v${version}`}
+          {busy ? "Running... / 运行中..." : `Run / 运行 v${version}`}
         </button>
       </div>
       {results ? <JsonViewer data={results} /> : null}
@@ -581,14 +581,14 @@ function PromotionPanel({
   onPromote: () => void;
 }) {
   return (
-    <section className="rounded-md border border-line bg-white p-4">
+    <section className="rounded-md border border-line bg-white p-5 shadow-sm">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-ink">Promotion</h2>
+        <h2 className="text-sm font-semibold text-ink">Promotion / 提升为当前版本</h2>
         <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">v{version}</span>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         <label className="block">
-          <span className="mb-2 block text-xs uppercase text-slate-500">Reason</span>
+          <span className="mb-2 block text-xs uppercase text-slate-500">Reason / 原因</span>
           <textarea
             value={reason}
             onChange={(event) => onReasonChange(event.target.value)}
@@ -596,7 +596,7 @@ function PromotionPanel({
           />
         </label>
         <label className="block">
-          <span className="mb-2 block text-xs uppercase text-slate-500">Change Summary</span>
+          <span className="mb-2 block text-xs uppercase text-slate-500">Change Summary / 变更摘要</span>
           <textarea
             value={changeSummary}
             onChange={(event) => onChangeSummaryChange(event.target.value)}
@@ -604,7 +604,7 @@ function PromotionPanel({
           />
         </label>
         <label className="block md:col-span-2">
-          <span className="mb-2 block text-xs uppercase text-slate-500">Risk Acceptance</span>
+          <span className="mb-2 block text-xs uppercase text-slate-500">Risk Acceptance / 风险接受说明</span>
           <textarea
             value={riskAcceptance}
             onChange={(event) => onRiskAcceptanceChange(event.target.value)}
@@ -620,7 +620,7 @@ function PromotionPanel({
             onChange={(event) => onReviewedDiffChange(event.target.checked)}
             className="h-4 w-4 rounded border-line"
           />
-          Diff reviewed
+          Diff reviewed / 已审查差异
         </label>
         <label className="inline-flex items-center gap-2 text-sm text-slate-700">
           <input
@@ -629,7 +629,7 @@ function PromotionPanel({
             onChange={(event) => onReadinessAcknowledgedChange(event.target.checked)}
             className="h-4 w-4 rounded border-line"
           />
-          Readiness acknowledged
+          Readiness acknowledged / 已确认就绪状态
         </label>
         <button
           type="button"
@@ -638,7 +638,7 @@ function PromotionPanel({
           className="inline-flex items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-[#0F5860] disabled:opacity-60"
         >
           <Rocket className="h-4 w-4" aria-hidden />
-          Promote
+          Promote / 提升
         </button>
       </div>
       {readiness?.blocking_reasons.length ? (

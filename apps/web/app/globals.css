@@ -7,11 +7,30 @@
 }
 
 body {
-  background: #f6f7f9;
+  background:
+    radial-gradient(circle at top left, rgba(20, 108, 117, 0.09), transparent 28rem),
+    linear-gradient(180deg, #f8fafc 0%, #eef3f6 100%);
   color: #1f2933;
+  min-height: 100vh;
 }
 
 pre {
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+::selection {
+  background: rgba(20, 108, 117, 0.18);
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease;
 }

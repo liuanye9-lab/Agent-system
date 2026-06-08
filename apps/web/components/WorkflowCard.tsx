@@ -14,7 +14,7 @@ export function WorkflowCard({ workflow }: WorkflowCardProps) {
   return (
     <Link
       href={`/workflows/${workflow.workflow_id}`}
-      className="block rounded-md border border-line bg-white p-4 hover:border-accent"
+      className="block rounded-md border border-line bg-white p-4 shadow-sm hover:border-accent hover:shadow-md"
     >
       <div className="flex items-start gap-3">
         <GitBranch className="mt-1 h-4 w-4 text-accent" aria-hidden />
@@ -22,7 +22,7 @@ export function WorkflowCard({ workflow }: WorkflowCardProps) {
           <h2 className="truncate text-sm font-semibold text-ink">{workflow.name}</h2>
           <p className="mt-1 text-xs text-slate-600">{workflow.workflow_id}</p>
           <p className="mt-3 text-xs text-slate-500">
-            v{workflow.version} · {new Date(workflow.created_at).toLocaleString()}
+            Version / 版本 v{workflow.version} · {new Date(workflow.created_at).toLocaleString()}
           </p>
         </div>
       </div>

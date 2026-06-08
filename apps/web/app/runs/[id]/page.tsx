@@ -110,7 +110,7 @@ export default function RunDetailPage() {
       setComparisons(comparisonResponse);
       setError(null);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Failed to load run");
+      setError(caught instanceof Error ? caught.message : "Failed to load run / 加载运行失败");
     }
   }
 
@@ -120,11 +120,11 @@ export default function RunDetailPage() {
     try {
       approvalPayload = approvalPayloadText.trim() ? JSON.parse(approvalPayloadText) : {};
     } catch {
-      setError("Approval payload must be valid JSON");
+      setError("Approval payload must be valid JSON / 审批载荷必须是有效 JSON");
       return;
     }
     if (!approvalPayload || typeof approvalPayload !== "object" || Array.isArray(approvalPayload)) {
-      setError("Approval payload must be a JSON object");
+      setError("Approval payload must be a JSON object / 审批载荷必须是 JSON 对象");
       return;
     }
     setApprovalBusy(true);
@@ -143,7 +143,7 @@ export default function RunDetailPage() {
       setRun(response);
       await refreshRun(run.run_id);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Failed to submit approval");
+      setError(caught instanceof Error ? caught.message : "Failed to submit approval / 提交审批失败");
     } finally {
       setApprovalBusy(false);
     }
@@ -162,7 +162,7 @@ export default function RunDetailPage() {
       setRun(response);
       await refreshRun(run.run_id);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Failed to cancel run");
+      setError(caught instanceof Error ? caught.message : "Failed to cancel run / 取消运行失败");
     } finally {
       setCancelBusy(false);
     }
@@ -190,7 +190,7 @@ export default function RunDetailPage() {
       });
       router.push(`/runs/${response.run_id}`);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Failed to rerun");
+      setError(caught instanceof Error ? caught.message : "Failed to rerun / 重跑失败");
     } finally {
       setRerunBusy(false);
     }
@@ -202,11 +202,11 @@ export default function RunDetailPage() {
     try {
       expectedOutput = JSON.parse(expectedOutputText);
     } catch {
-      setError("Expected output must be valid JSON");
+      setError("Expected output must be valid JSON / 期望输出必须是有效 JSON");
       return;
     }
     if (!expectedOutput || typeof expectedOutput !== "object" || Array.isArray(expectedOutput)) {
-      setError("Expected output must be a JSON object");
+      setError("Expected output must be a JSON object / 期望输出必须是 JSON 对象");
       return;
     }
 
@@ -224,14 +224,14 @@ export default function RunDetailPage() {
       });
       setComparisons([response, ...comparisons]);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Failed to compare shadow run");
+      setError(caught instanceof Error ? caught.message : "Failed to compare shadow run / 对比影子运行失败");
     } finally {
       setComparisonBusy(false);
     }
   }
 
   if (error && !run) return <p className="text-sm text-red-700">{error}</p>;
-  if (!run) return <p className="text-sm text-slate-600">Loading run...</p>;
+  if (!run) return <p className="text-sm text-slate-600">Loading run... / 正在加载运行...</p>;
   const canCancel = ["created", "running", "paused"].includes(run.status);
   const canRerun = ["completed", "failed", "rejected", "canceled"].includes(run.status);
   const canCompareShadow = run.shadow_mode && canRerun;
@@ -240,21 +240,21 @@ export default function RunDetailPage() {
     <div className="grid gap-6 lg:grid-cols-[0.7fr_1.3fr]">
       <section className="space-y-4">
         <div>
-          <h1 className="text-2xl font-semibold text-ink">Run Detail</h1>
+          <h1 className="text-2xl font-semibold text-ink">Run Detail / 运行详情</h1>
           <p className="mt-1 text-sm text-slate-600">
-            {run.run_id} · {run.status} · {run.shadow_mode ? "shadow" : "live"} · workflow v{run.workflow_version ?? "unknown"}
+            {run.run_id} · {run.status} · {run.shadow_mode ? "shadow / 影子" : "live / 正式"} · workflow / 工作流 v{run.workflow_version ?? "unknown"}
           </p>
         </div>
         {error ? <p className="rounded-md border border-red-200 bg-white p-3 text-sm text-red-700">{error}</p> : null}
         {run.status === "paused" ? (
-          <div className="rounded-md border border-line bg-white p-4">
-            <h2 className="text-sm font-semibold text-ink">Approval Required</h2>
+          <div className="rounded-md border border-line bg-white p-5 shadow-sm">
+            <h2 className="text-sm font-semibold text-ink">Approval Required / 需要审批</h2>
             <p className="mt-1 text-sm text-slate-600">
-              Current node: {run.current_node_id ?? "unknown"}
+              Current node / 当前节点: {run.current_node_id ?? "unknown"}
             </p>
             <div className="mt-3 space-y-3">
               <label className="block">
-                <span className="mb-2 block text-xs uppercase text-slate-500">Approval Payload JSON</span>
+                <span className="mb-2 block text-xs uppercase text-slate-500">Approval Payload JSON / 审批载荷 JSON</span>
                 <textarea
                   value={approvalPayloadText}
                   onChange={(event) => setApprovalPayloadText(event.target.value)}
@@ -264,7 +264,7 @@ export default function RunDetailPage() {
               </label>
               <div className="grid gap-3 md:grid-cols-2">
                 <label className="block">
-                  <span className="mb-2 block text-xs uppercase text-slate-500">Max Steps</span>
+                  <span className="mb-2 block text-xs uppercase text-slate-500">Max Steps / 最大步数</span>
                   <input
                     type="number"
                     min="1"
@@ -275,7 +275,7 @@ export default function RunDetailPage() {
                   />
                 </label>
                 <label className="block">
-                  <span className="mb-2 block text-xs uppercase text-slate-500">Max Retries</span>
+                  <span className="mb-2 block text-xs uppercase text-slate-500">Max Retries / 最大重试</span>
                   <input
                     type="number"
                     min="0"
@@ -295,7 +295,7 @@ export default function RunDetailPage() {
                 className="inline-flex items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-[#0F5860] disabled:opacity-60"
               >
                 <Check className="h-4 w-4" aria-hidden />
-                Approve
+                Approve / 通过
               </button>
               <button
                 type="button"
@@ -304,16 +304,16 @@ export default function RunDetailPage() {
                 className="inline-flex items-center gap-2 rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-ink hover:border-red-700 disabled:opacity-60"
               >
                 <X className="h-4 w-4" aria-hidden />
-                Reject
+                Reject / 拒绝
               </button>
             </div>
           </div>
         ) : null}
         {canCancel ? (
-          <div className="rounded-md border border-line bg-white p-4">
-            <h2 className="text-sm font-semibold text-ink">Cancel</h2>
+          <div className="rounded-md border border-line bg-white p-5 shadow-sm">
+            <h2 className="text-sm font-semibold text-ink">Cancel / 取消</h2>
             <label className="mt-3 block">
-              <span className="mb-2 block text-xs uppercase text-slate-500">Reason</span>
+              <span className="mb-2 block text-xs uppercase text-slate-500">Reason / 原因</span>
               <textarea
                 value={cancelReason}
                 onChange={(event) => setCancelReason(event.target.value)}
@@ -327,15 +327,15 @@ export default function RunDetailPage() {
               className="mt-3 inline-flex items-center gap-2 rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-700 hover:border-red-700 disabled:opacity-60"
             >
               <Ban className="h-4 w-4" aria-hidden />
-              Cancel Run
+              Cancel Run / 取消运行
             </button>
           </div>
         ) : null}
         {canRerun ? (
-          <div className="rounded-md border border-line bg-white p-4">
-            <h2 className="text-sm font-semibold text-ink">Rerun</h2>
+          <div className="rounded-md border border-line bg-white p-5 shadow-sm">
+            <h2 className="text-sm font-semibold text-ink">Rerun / 重跑</h2>
             <label className="mt-3 block">
-              <span className="mb-2 block text-xs uppercase text-slate-500">Reason</span>
+              <span className="mb-2 block text-xs uppercase text-slate-500">Reason / 原因</span>
               <textarea
                 value={rerunReason}
                 onChange={(event) => setRerunReason(event.target.value)}
@@ -344,7 +344,7 @@ export default function RunDetailPage() {
             </label>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <label className="block">
-                <span className="mb-2 block text-xs uppercase text-slate-500">Max Steps</span>
+                <span className="mb-2 block text-xs uppercase text-slate-500">Max Steps / 最大步数</span>
                 <input
                   type="number"
                   min="1"
@@ -355,7 +355,7 @@ export default function RunDetailPage() {
                 />
               </label>
               <label className="block">
-                <span className="mb-2 block text-xs uppercase text-slate-500">Max Retries</span>
+                <span className="mb-2 block text-xs uppercase text-slate-500">Max Retries / 最大重试</span>
                 <input
                   type="number"
                   min="0"
@@ -366,7 +366,7 @@ export default function RunDetailPage() {
                 />
               </label>
               <label className="block">
-                <span className="mb-2 block text-xs uppercase text-slate-500">Idempotency Key</span>
+                <span className="mb-2 block text-xs uppercase text-slate-500">Idempotency Key / 幂等键</span>
                 <input
                   value={rerunIdempotencyKey}
                   onChange={(event) => setRerunIdempotencyKey(event.target.value)}
@@ -374,15 +374,15 @@ export default function RunDetailPage() {
                 />
               </label>
               <label className="block">
-                <span className="mb-2 block text-xs uppercase text-slate-500">Mode</span>
+                <span className="mb-2 block text-xs uppercase text-slate-500">Mode / 模式</span>
                 <select
                   value={rerunShadowMode}
                   onChange={(event) => setRerunShadowMode(event.target.value as "preserve" | "shadow" | "live")}
                   className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm"
                 >
-                  <option value="preserve">preserve source</option>
-                  <option value="shadow">shadow</option>
-                  <option value="live">live</option>
+                  <option value="preserve">preserve source / 保持来源</option>
+                  <option value="shadow">shadow / 影子</option>
+                  <option value="live">live / 正式</option>
                 </select>
               </label>
             </div>
@@ -393,7 +393,7 @@ export default function RunDetailPage() {
               className="mt-3 inline-flex items-center gap-2 rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-ink hover:border-accent disabled:opacity-60"
             >
               <RotateCcw className="h-4 w-4" aria-hidden />
-              Rerun
+              Rerun / 重跑
             </button>
           </div>
         ) : null}
@@ -414,7 +414,7 @@ export default function RunDetailPage() {
         <JsonViewer data={run.output_payload} />
       </section>
       <section>
-        <h2 className="mb-3 text-sm font-semibold text-ink">Trace Timeline</h2>
+        <h2 className="mb-3 text-sm font-semibold text-ink">Trace Timeline / 追踪时间线</h2>
         <TraceTimeline traces={traces} />
       </section>
     </div>
@@ -443,11 +443,11 @@ function ShadowComparisonPanel({
   onSubmit: () => void;
 }) {
   return (
-    <div className="rounded-md border border-line bg-white p-4">
-      <h2 className="text-sm font-semibold text-ink">Shadow Comparison</h2>
+    <div className="rounded-md border border-line bg-white p-5 shadow-sm">
+      <h2 className="text-sm font-semibold text-ink">Shadow Comparison / 影子运行对比</h2>
       <div className="mt-3 space-y-3">
         <label className="block text-xs uppercase text-slate-500" htmlFor="expected-output">
-          Expected Output
+          Expected Output / 期望输出
         </label>
         <textarea
           id="expected-output"
@@ -456,7 +456,7 @@ function ShadowComparisonPanel({
           className="min-h-32 w-full rounded-md border border-line bg-white p-3 font-mono text-xs text-ink"
         />
         <label className="block">
-          <span className="mb-2 block text-xs uppercase text-slate-500">Notes</span>
+          <span className="mb-2 block text-xs uppercase text-slate-500">Notes / 备注</span>
           <textarea
             value={comparisonNotes}
             onChange={(event) => onComparisonNotesChange(event.target.value)}
@@ -465,7 +465,7 @@ function ShadowComparisonPanel({
         </label>
         <div className="flex flex-wrap items-center gap-3">
           <label className="text-xs uppercase text-slate-500" htmlFor="pass-threshold">
-            Threshold
+            Threshold / 阈值
           </label>
           <input
             id="pass-threshold"
@@ -484,7 +484,7 @@ function ShadowComparisonPanel({
             className="inline-flex items-center gap-2 rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-ink hover:border-accent disabled:opacity-60"
           >
             <Check className="h-4 w-4" aria-hidden />
-            Compare
+            Compare / 对比
           </button>
         </div>
       </div>
@@ -493,12 +493,12 @@ function ShadowComparisonPanel({
           {comparisons.map((comparison) => (
             <div key={comparison.eval_id} className="rounded-sm bg-field p-3 text-sm text-slate-700">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-medium text-ink">{comparison.passed ? "passed" : "failed"}</span>
+                <span className="font-medium text-ink">{comparison.passed ? "passed / 通过" : "failed / 失败"}</span>
                 <span>{comparison.score.toFixed(2)}</span>
               </div>
               <p className="mt-1">{comparison.reason}</p>
               <p className="mt-1 text-xs text-slate-500">
-                {comparison.details.matched_path_count ?? 0} / {comparison.details.compared_path_count ?? 0} paths
+                {comparison.details.matched_path_count ?? 0} / {comparison.details.compared_path_count ?? 0} paths / 路径
               </p>
             </div>
           ))}
@@ -511,14 +511,14 @@ function ShadowComparisonPanel({
 function DiagnosticsPanel({ diagnostics }: { diagnostics: RunDiagnostics }) {
   const traceEntries = Object.entries(diagnostics.trace_counts);
   return (
-    <div className="rounded-md border border-line bg-white p-4">
+    <div className="rounded-md border border-line bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h2 className="text-sm font-semibold text-ink">Diagnostics</h2>
+          <h2 className="text-sm font-semibold text-ink">Diagnostics / 诊断</h2>
           <p className="mt-1 text-sm text-slate-600">
-            {diagnostics.trace_count} traces · {diagnostics.is_terminal ? "terminal" : "active"}
+            {diagnostics.trace_count} traces / 追踪 · {diagnostics.is_terminal ? "terminal / 终态" : "active / 活跃"}
             {" · "}
-            {diagnostics.shadow_mode ? "shadow" : "live"}
+            {diagnostics.shadow_mode ? "shadow / 影子" : "live / 正式"}
           </p>
         </div>
         <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">{diagnostics.status}</span>
@@ -526,24 +526,24 @@ function DiagnosticsPanel({ diagnostics }: { diagnostics: RunDiagnostics }) {
       {diagnostics.failure ? (
         <dl className="mt-3 grid gap-2 text-sm">
           <div>
-            <dt className="text-xs uppercase text-slate-500">Node</dt>
+            <dt className="text-xs uppercase text-slate-500">Node / 节点</dt>
             <dd className="text-ink">{diagnostics.failure.node_id ?? diagnostics.current_node_id ?? "-"}</dd>
           </div>
           {diagnostics.failure.error ? (
             <div>
-              <dt className="text-xs uppercase text-slate-500">Error</dt>
+              <dt className="text-xs uppercase text-slate-500">Error / 错误</dt>
               <dd className="break-words text-red-700">{diagnostics.failure.error}</dd>
             </div>
           ) : null}
           {diagnostics.failure.pending_node_id ? (
             <div>
-              <dt className="text-xs uppercase text-slate-500">Pending Node</dt>
+              <dt className="text-xs uppercase text-slate-500">Pending Node / 待处理节点</dt>
               <dd className="text-ink">{diagnostics.failure.pending_node_id}</dd>
             </div>
           ) : null}
           {diagnostics.failure.max_steps ? (
             <div>
-              <dt className="text-xs uppercase text-slate-500">Step Budget</dt>
+              <dt className="text-xs uppercase text-slate-500">Step Budget / 步数预算</dt>
               <dd className="text-ink">
                 {diagnostics.failure.executed_steps ?? 0} / {diagnostics.failure.max_steps}
               </dd>
@@ -551,7 +551,7 @@ function DiagnosticsPanel({ diagnostics }: { diagnostics: RunDiagnostics }) {
           ) : null}
           {diagnostics.failure.max_attempts ? (
             <div>
-              <dt className="text-xs uppercase text-slate-500">Retry Budget</dt>
+              <dt className="text-xs uppercase text-slate-500">Retry Budget / 重试预算</dt>
               <dd className="text-ink">
                 attempt {diagnostics.failure.attempt ?? 0} / {diagnostics.failure.max_attempts}
                 {diagnostics.failure.retry_budget_exhausted ? " · exhausted" : ""}

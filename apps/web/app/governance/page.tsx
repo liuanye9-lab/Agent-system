@@ -287,7 +287,7 @@ export default function GovernancePage() {
         setWorkflows(items);
         if (items[0]) setSelectedWorkflowId(items[0].workflow_id);
       })
-      .catch((caught) => setError(caught instanceof Error ? caught.message : "Failed to load workflows"));
+      .catch((caught) => setError(caught instanceof Error ? caught.message : "Failed to load workflows / 加载工作流失败"));
   }, []);
 
   useEffect(() => {
@@ -357,7 +357,7 @@ export default function GovernancePage() {
       });
       setRepairPreviewResult(result);
     } catch (caught) {
-      setRepairPreviewError(caught instanceof Error ? caught.message : "Failed to preview repair candidate");
+      setRepairPreviewError(caught instanceof Error ? caught.message : "Failed to preview repair candidate / 预览修复候选失败");
     } finally {
       setRepairPreviewing(false);
     }
@@ -385,7 +385,7 @@ export default function GovernancePage() {
       setRepairApplyResult(result);
       setRepairPreviewResult(null);
     } catch (caught) {
-      setRepairApplyError(caught instanceof Error ? caught.message : "Failed to create repair candidate");
+      setRepairApplyError(caught instanceof Error ? caught.message : "Failed to create repair candidate / 创建修复候选失败");
     } finally {
       setRepairApplying(false);
     }
@@ -429,7 +429,7 @@ export default function GovernancePage() {
         setRetentionSnapshotAcknowledged(false);
       }
     } catch (caught) {
-      setRetentionApplyError(caught instanceof Error ? caught.message : "Failed to apply retention");
+      setRetentionApplyError(caught instanceof Error ? caught.message : "Failed to apply retention / 应用保留策略失败");
     } finally {
       setRetentionApplying(false);
     }
@@ -439,15 +439,15 @@ export default function GovernancePage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-ink">Governance</h1>
-          <p className="mt-1 text-sm text-slate-600">Trace, eval, metrics, optimization loop</p>
+          <h1 className="text-2xl font-semibold text-ink">Governance / 治理</h1>
+          <p className="mt-1 text-sm text-slate-600">Trace, eval, metrics, optimization loop. 追踪、评估、指标和优化闭环。</p>
         </div>
         <select
           className="rounded-md border border-line bg-white px-3 py-2 text-sm"
           value={selectedWorkflowId}
           onChange={(event) => setSelectedWorkflowId(event.target.value)}
         >
-          <option value="">All workflows</option>
+          <option value="">All workflows / 全部工作流</option>
           {workflows.map((workflow) => (
             <option key={workflow.workflow_id} value={workflow.workflow_id}>
               {workflow.name}
@@ -457,37 +457,37 @@ export default function GovernancePage() {
       </div>
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
       <section className="grid gap-4 md:grid-cols-3">
-        <MetricCard title="Node Success" value={`${Math.round((metrics.node_success_rate ?? 0) * 100)}%`} />
-        <MetricCard title="Approvals" value={`${metrics.approval_count ?? 0}`} />
-        <MetricCard title="Avg Runtime" value={`${Math.round(metrics.average_duration_ms ?? 0)} ms`} />
+        <MetricCard title="Node Success / 节点成功率" value={`${Math.round((metrics.node_success_rate ?? 0) * 100)}%`} />
+        <MetricCard title="Approvals / 审批数" value={`${metrics.approval_count ?? 0}`} />
+        <MetricCard title="Avg Runtime / 平均运行时长" value={`${Math.round(metrics.average_duration_ms ?? 0)} ms`} />
       </section>
       {runReport ? (
-        <section className="rounded-md border border-line bg-white p-4">
+        <section className="rounded-md border border-line bg-white p-5 shadow-sm">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold text-ink">Run Account</h2>
+            <h2 className="text-sm font-semibold text-ink">Run Account / 运行账户</h2>
             <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">
-              {runReport.active_run_count} active · {runReport.terminal_run_count} terminal
+              {runReport.active_run_count} active / 活跃 · {runReport.terminal_run_count} terminal / 终态
             </span>
           </div>
           <div className="grid gap-3 md:grid-cols-4">
-            <CostStat label="Runs" value={runReport.run_count} />
-            <CostStat label="Pending approvals" value={runReport.pending_approval_count} />
-            <CostStat label="Recovery queue" value={runReport.recovery_queue_count} />
-            <CostStat label="Shadow validation" value={runReport.shadow_validation_pending_count} />
+            <CostStat label="Runs / 运行" value={runReport.run_count} />
+            <CostStat label="Pending approvals / 待审批" value={runReport.pending_approval_count} />
+            <CostStat label="Recovery queue / 恢复队列" value={runReport.recovery_queue_count} />
+            <CostStat label="Shadow validation / 影子校验" value={runReport.shadow_validation_pending_count} />
           </div>
           <div className="mt-3 grid gap-3 md:grid-cols-4">
-            <CostStat label="Live runs" value={runReport.live_run_count} />
-            <CostStat label="Shadow runs" value={runReport.shadow_run_count} />
-            <CostStat label="Traces" value={runReport.trace_count} />
-            <CostStat label="Avg run" value={`${Math.round(runReport.average_run_duration_ms)} ms`} />
+            <CostStat label="Live runs / 正式运行" value={runReport.live_run_count} />
+            <CostStat label="Shadow runs / 影子运行" value={runReport.shadow_run_count} />
+            <CostStat label="Traces / 追踪" value={runReport.trace_count} />
+            <CostStat label="Avg run / 平均运行" value={`${Math.round(runReport.average_run_duration_ms)} ms`} />
           </div>
           <div className="mt-4 overflow-hidden rounded-sm border border-line">
             <table className="w-full text-left text-sm">
               <thead className="bg-field text-xs uppercase text-slate-600">
                 <tr>
-                  <th className="px-3 py-2">Status</th>
-                  <th className="px-3 py-2">Count</th>
-                  <th className="px-3 py-2">Queue</th>
+                  <th className="px-3 py-2">Status / 状态</th>
+                  <th className="px-3 py-2">Count / 数量</th>
+                  <th className="px-3 py-2">Queue / 队列</th>
                 </tr>
               </thead>
               <tbody>
@@ -508,9 +508,9 @@ export default function GovernancePage() {
               <table className="w-full text-left text-sm">
                 <thead className="bg-field text-xs uppercase text-slate-600">
                   <tr>
-                    <th className="px-3 py-2">Run</th>
-                    <th className="px-3 py-2">Reason</th>
-                    <th className="px-3 py-2">Action</th>
+                    <th className="px-3 py-2">Run / 运行</th>
+                    <th className="px-3 py-2">Reason / 原因</th>
+                    <th className="px-3 py-2">Action / 操作</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -530,10 +530,10 @@ export default function GovernancePage() {
               <table className="w-full text-left text-sm">
                 <thead className="bg-field text-xs uppercase text-slate-600">
                   <tr>
-                    <th className="px-3 py-2">Severity</th>
-                    <th className="px-3 py-2">Code</th>
-                    <th className="px-3 py-2">Count</th>
-                    <th className="px-3 py-2">Signal</th>
+                    <th className="px-3 py-2">Severity / 严重度</th>
+                    <th className="px-3 py-2">Code / 代码</th>
+                    <th className="px-3 py-2">Count / 数量</th>
+                    <th className="px-3 py-2">Signal / 信号</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -552,39 +552,39 @@ export default function GovernancePage() {
         </section>
       ) : null}
       {qualityReport ? (
-        <section className="rounded-md border border-line bg-white p-4">
+        <section className="rounded-md border border-line bg-white p-5 shadow-sm">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold text-ink">Quality Account</h2>
+            <h2 className="text-sm font-semibold text-ink">Quality Account / 质量账户</h2>
             <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">
               {qualityReport.quality_level} · {qualityReport.quality_score}
             </span>
           </div>
           <div className="grid gap-3 md:grid-cols-4">
-            <CostStat label="Node success" value={formatRate(qualityReport.node_success_rate)} />
-            <CostStat label="Eval pass" value={formatRate(qualityReport.eval_pass_rate)} />
+            <CostStat label="Node success / 节点成功率" value={formatRate(qualityReport.node_success_rate)} />
+            <CostStat label="Eval pass / 评估通过率" value={formatRate(qualityReport.eval_pass_rate)} />
             <CostStat
-              label="Ready versions"
+              label="Ready versions / 就绪版本"
               value={`${qualityReport.release_ready_version_count}/${qualityReport.release_ready_version_count + qualityReport.unready_version_count}`}
             />
-            <CostStat label="Suggestions" value={qualityReport.optimization_suggestion_count} />
+            <CostStat label="Suggestions / 建议" value={qualityReport.optimization_suggestion_count} />
           </div>
           <div className="mt-3 grid gap-3 md:grid-cols-4">
-            <CostStat label="Eval results" value={qualityReport.eval_result_count} />
+            <CostStat label="Eval results / 评估结果" value={qualityReport.eval_result_count} />
             <CostStat
-              label="Shadow checks"
+              label="Shadow checks / 影子检查"
               value={`${qualityReport.passing_shadow_comparison_count}/${qualityReport.shadow_comparison_count}`}
             />
-            <CostStat label="Failed nodes" value={qualityReport.failed_node_counts.length} />
-            <CostStat label="Avg eval" value={formatRate(qualityReport.average_eval_score)} />
+            <CostStat label="Failed nodes / 失败节点" value={qualityReport.failed_node_counts.length} />
+            <CostStat label="Avg eval / 平均评估" value={formatRate(qualityReport.average_eval_score)} />
           </div>
           {qualityReport.failed_node_counts.length > 0 ? (
             <div className="mt-4 overflow-hidden rounded-sm border border-line">
               <table className="w-full text-left text-sm">
                 <thead className="bg-field text-xs uppercase text-slate-600">
                   <tr>
-                    <th className="px-3 py-2">Node</th>
-                    <th className="px-3 py-2">Failures</th>
-                    <th className="px-3 py-2">Reason codes</th>
+                    <th className="px-3 py-2">Node / 节点</th>
+                    <th className="px-3 py-2">Failures / 失败数</th>
+                    <th className="px-3 py-2">Reason codes / 原因代码</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -608,10 +608,10 @@ export default function GovernancePage() {
               <table className="w-full text-left text-sm">
                 <thead className="bg-field text-xs uppercase text-slate-600">
                   <tr>
-                    <th className="px-3 py-2">Severity</th>
-                    <th className="px-3 py-2">Code</th>
-                    <th className="px-3 py-2">Count</th>
-                    <th className="px-3 py-2">Signal</th>
+                    <th className="px-3 py-2">Severity / 严重度</th>
+                    <th className="px-3 py-2">Code / 代码</th>
+                    <th className="px-3 py-2">Count / 数量</th>
+                    <th className="px-3 py-2">Signal / 信号</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -630,35 +630,35 @@ export default function GovernancePage() {
         </section>
       ) : null}
       {costReport ? (
-        <section className="rounded-md border border-line bg-white p-4">
+        <section className="rounded-md border border-line bg-white p-5 shadow-sm">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold text-ink">Cost Account</h2>
+            <h2 className="text-sm font-semibold text-ink">Cost Account / 成本账户</h2>
             <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">
-              {costReport.estimated_total_tokens.toLocaleString()} est. tokens
+              {costReport.estimated_total_tokens.toLocaleString()} est. tokens / 预估 token
             </span>
           </div>
           <div className="grid gap-3 md:grid-cols-4">
-            <CostStat label="Runs" value={costReport.run_count} />
-            <CostStat label="Traces" value={costReport.trace_count} />
-            <CostStat label="Human touches" value={costReport.human_touch_count} />
-            <CostStat label="Avg trace" value={`${Math.round(costReport.average_trace_duration_ms)} ms`} />
+            <CostStat label="Runs / 运行" value={costReport.run_count} />
+            <CostStat label="Traces / 追踪" value={costReport.trace_count} />
+            <CostStat label="Human touches / 人工触点" value={costReport.human_touch_count} />
+            <CostStat label="Avg trace / 平均追踪" value={`${Math.round(costReport.average_trace_duration_ms)} ms`} />
           </div>
           <div className="mt-3 grid gap-3 md:grid-cols-4">
-            <CostStat label="Input tokens" value={costReport.estimated_input_tokens.toLocaleString()} />
-            <CostStat label="Output tokens" value={costReport.estimated_output_tokens.toLocaleString()} />
-            <CostStat label="Retry traces" value={costReport.retry_trace_count} />
-            <CostStat label="Shadow runs" value={`${costReport.shadow_run_count}/${costReport.run_count}`} />
+            <CostStat label="Input tokens / 输入 token" value={costReport.estimated_input_tokens.toLocaleString()} />
+            <CostStat label="Output tokens / 输出 token" value={costReport.estimated_output_tokens.toLocaleString()} />
+            <CostStat label="Retry traces / 重试追踪" value={costReport.retry_trace_count} />
+            <CostStat label="Shadow runs / 影子运行" value={`${costReport.shadow_run_count}/${costReport.run_count}`} />
           </div>
           {costReport.node_costs.length > 0 ? (
             <div className="mt-4 overflow-hidden rounded-sm border border-line">
               <table className="w-full text-left text-sm">
                 <thead className="bg-field text-xs uppercase text-slate-600">
                   <tr>
-                    <th className="px-3 py-2">Node</th>
-                    <th className="px-3 py-2">Traces</th>
-                    <th className="px-3 py-2">Tokens</th>
-                    <th className="px-3 py-2">Avg ms</th>
-                    <th className="px-3 py-2">Human</th>
+                    <th className="px-3 py-2">Node / 节点</th>
+                    <th className="px-3 py-2">Traces / 追踪</th>
+                    <th className="px-3 py-2">Tokens / Token</th>
+                    <th className="px-3 py-2">Avg ms / 平均毫秒</th>
+                    <th className="px-3 py-2">Human / 人工</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -680,9 +680,9 @@ export default function GovernancePage() {
               <table className="w-full text-left text-sm">
                 <thead className="bg-field text-xs uppercase text-slate-600">
                   <tr>
-                    <th className="px-3 py-2">Code</th>
-                    <th className="px-3 py-2">Count</th>
-                    <th className="px-3 py-2">Signal</th>
+                    <th className="px-3 py-2">Code / 代码</th>
+                    <th className="px-3 py-2">Count / 数量</th>
+                    <th className="px-3 py-2">Signal / 信号</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -700,33 +700,33 @@ export default function GovernancePage() {
         </section>
       ) : null}
       {retentionReport ? (
-        <section className="rounded-md border border-line bg-white p-4">
+        <section className="rounded-md border border-line bg-white p-5 shadow-sm">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold text-ink">Retention Account</h2>
+            <h2 className="text-sm font-semibold text-ink">Retention Account / 保留账户</h2>
             <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">
-              generated {formatDateTime(retentionReport.generated_at)}
+              generated / 生成于 {formatDateTime(retentionReport.generated_at)}
             </span>
           </div>
           <div className="grid gap-3 md:grid-cols-4">
-            <CostStat label="Expired terminal" value={retentionReport.run_account.expired_terminal_run_count} />
-            <CostStat label="Old active" value={retentionReport.run_account.active_run_past_retention_count} />
-            <CostStat label="Old evals" value={retentionReport.eval_account.expired_eval_result_count} />
-            <CostStat label="Old audit" value={retentionReport.audit_account.expired_audit_event_count} />
+            <CostStat label="Expired terminal / 过期终态" value={retentionReport.run_account.expired_terminal_run_count} />
+            <CostStat label="Old active / 旧活跃项" value={retentionReport.run_account.active_run_past_retention_count} />
+            <CostStat label="Old evals / 旧评估" value={retentionReport.eval_account.expired_eval_result_count} />
+            <CostStat label="Old audit / 旧审计" value={retentionReport.audit_account.expired_audit_event_count} />
           </div>
           <div className="mt-3 grid gap-3 md:grid-cols-4">
-            <CostStat label="Run policy" value={`${retentionReport.policy.run_retention_days} d`} />
-            <CostStat label="Eval policy" value={`${retentionReport.policy.eval_retention_days} d`} />
-            <CostStat label="Audit policy" value={`${retentionReport.policy.audit_retention_days} d`} />
-            <CostStat label="Sample cap" value={retentionReport.policy.sample_limit} />
+            <CostStat label="Run policy / 运行策略" value={`${retentionReport.policy.run_retention_days} d`} />
+            <CostStat label="Eval policy / 评估策略" value={`${retentionReport.policy.eval_retention_days} d`} />
+            <CostStat label="Audit policy / 审计策略" value={`${retentionReport.policy.audit_retention_days} d`} />
+            <CostStat label="Sample cap / 样本上限" value={retentionReport.policy.sample_limit} />
           </div>
           <div className="mt-4 overflow-hidden rounded-sm border border-line">
             <table className="w-full text-left text-sm">
               <thead className="bg-field text-xs uppercase text-slate-600">
                 <tr>
-                  <th className="px-3 py-2">Category</th>
-                  <th className="px-3 py-2">Count</th>
-                  <th className="px-3 py-2">Recommendation</th>
-                  <th className="px-3 py-2">Sample IDs</th>
+                  <th className="px-3 py-2">Category / 类别</th>
+                  <th className="px-3 py-2">Count / 数量</th>
+                  <th className="px-3 py-2">Recommendation / 建议</th>
+                  <th className="px-3 py-2">Sample IDs / 样本 ID</th>
                 </tr>
               </thead>
               <tbody>
@@ -747,7 +747,7 @@ export default function GovernancePage() {
           <div className="mt-4 rounded-md border border-line bg-field p-3">
             <div className="grid gap-3 md:grid-cols-[2fr_1fr_auto]">
               <label className="block">
-                <span className="mb-1 block text-xs uppercase text-slate-500">Reason</span>
+                <span className="mb-1 block text-xs uppercase text-slate-500">Reason / 原因</span>
                 <input
                   className="w-full rounded-md border border-line px-3 py-2 text-sm"
                   value={retentionReason}
@@ -760,7 +760,7 @@ export default function GovernancePage() {
                   onChange={(event) => setRetentionSnapshotAcknowledged(event.target.checked)}
                   type="checkbox"
                 />
-                Snapshot reviewed
+                Snapshot reviewed / 已审查快照
               </label>
               <div className="flex self-end gap-2">
                 <button
@@ -769,7 +769,7 @@ export default function GovernancePage() {
                   onClick={() => applyRetention(true)}
                   type="button"
                 >
-                  {retentionApplying ? "Running..." : "Dry Run"}
+                  {retentionApplying ? "Running... / 运行中..." : "Dry Run / 试运行"}
                 </button>
                 <button
                   className="rounded-md bg-accent px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
@@ -777,49 +777,49 @@ export default function GovernancePage() {
                   onClick={() => applyRetention(false)}
                   type="button"
                 >
-                  {retentionApplying ? "Applying..." : "Apply"}
+                  {retentionApplying ? "Applying... / 应用中..." : "Apply / 应用"}
                 </button>
               </div>
             </div>
             {retentionApplyError ? <p className="mt-3 text-sm text-red-700">{retentionApplyError}</p> : null}
             {retentionApplyResult ? (
               <div className="mt-3 grid gap-3 text-sm md:grid-cols-3">
-                <RetentionApplyStat title="Eligible" values={retentionApplyResult.eligible_counts} />
-                <RetentionApplyStat title="Deleted" values={retentionApplyResult.deleted_counts} />
-                <RetentionApplyStat title="Skipped" values={retentionApplyResult.skipped_counts} />
+                <RetentionApplyStat title="Eligible / 可处理" values={retentionApplyResult.eligible_counts} />
+                <RetentionApplyStat title="Deleted / 已删除" values={retentionApplyResult.deleted_counts} />
+                <RetentionApplyStat title="Skipped / 已跳过" values={retentionApplyResult.skipped_counts} />
               </div>
             ) : null}
           </div>
           <div className="mt-3 grid gap-3 text-xs text-slate-600 md:grid-cols-3">
-            <p>Runs before {formatDateTime(retentionReport.cutoffs.runs_before)}</p>
-            <p>Evals before {formatDateTime(retentionReport.cutoffs.evals_before)}</p>
-            <p>Audit before {formatDateTime(retentionReport.cutoffs.audit_events_before)}</p>
+            <p>Runs before / 运行早于 {formatDateTime(retentionReport.cutoffs.runs_before)}</p>
+            <p>Evals before / 评估早于 {formatDateTime(retentionReport.cutoffs.evals_before)}</p>
+            <p>Audit before / 审计早于 {formatDateTime(retentionReport.cutoffs.audit_events_before)}</p>
           </div>
         </section>
       ) : null}
       {riskReport ? (
-        <section className="rounded-md border border-line bg-white p-4">
+        <section className="rounded-md border border-line bg-white p-5 shadow-sm">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold text-ink">Risk Account</h2>
+            <h2 className="text-sm font-semibold text-ink">Risk Account / 风险账户</h2>
             <span className="rounded-sm bg-field px-2 py-1 text-xs text-slate-700">
               {riskReport.risk_level} · {riskReport.risk_score}
             </span>
           </div>
           <div className="grid gap-3 md:grid-cols-4">
-            <RiskStat label="High-risk tools" value={riskReport.tool_risk.high_risk_tool_count} />
-            <RiskStat label="Write tools" value={riskReport.tool_risk.write_tool_count} />
-            <RiskStat label="Unready live runs" value={riskReport.run_risk.live_runs_on_unready_version_count} />
-            <RiskStat label="Gate blocks" value={riskReport.audit_risk.release_gate_block_count} />
+            <RiskStat label="High-risk tools / 高风险工具" value={riskReport.tool_risk.high_risk_tool_count} />
+            <RiskStat label="Write tools / 写入工具" value={riskReport.tool_risk.write_tool_count} />
+            <RiskStat label="Unready live runs / 未就绪正式运行" value={riskReport.run_risk.live_runs_on_unready_version_count} />
+            <RiskStat label="Gate blocks / 发布门禁阻塞" value={riskReport.audit_risk.release_gate_block_count} />
           </div>
           {riskReport.risk_items.length > 0 ? (
             <div className="mt-4 overflow-hidden rounded-sm border border-line">
               <table className="w-full text-left text-sm">
                 <thead className="bg-field text-xs uppercase text-slate-600">
                   <tr>
-                    <th className="px-3 py-2">Severity</th>
-                    <th className="px-3 py-2">Code</th>
-                    <th className="px-3 py-2">Count</th>
-                    <th className="px-3 py-2">Message</th>
+                    <th className="px-3 py-2">Severity / 严重度</th>
+                    <th className="px-3 py-2">Code / 代码</th>
+                    <th className="px-3 py-2">Count / 数量</th>
+                    <th className="px-3 py-2">Message / 消息</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -837,37 +837,37 @@ export default function GovernancePage() {
           ) : null}
         </section>
       ) : null}
-      <section className="rounded-md border border-line bg-white p-4">
+      <section className="rounded-md border border-line bg-white p-5 shadow-sm">
         <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-ink">
           <BarChart3 className="h-4 w-4 text-accent" aria-hidden />
-          Quality Signals
+          Quality Signals / 质量信号
         </div>
         <div className="space-y-4">
-          <ProgressBar value={Math.round((metrics.node_success_rate ?? 0) * 100)} label="Node success rate" />
-          <ProgressBar value={Math.round((metrics.tool_success_rate ?? 0) * 100)} label="Tool success rate" />
+          <ProgressBar value={Math.round((metrics.node_success_rate ?? 0) * 100)} label="Node success rate / 节点成功率" />
+          <ProgressBar value={Math.round((metrics.tool_success_rate ?? 0) * 100)} label="Tool success rate / 工具成功率" />
         </div>
       </section>
       <section>
-        <h2 className="mb-3 text-sm font-semibold text-ink">Audit Events</h2>
+        <h2 className="mb-3 text-sm font-semibold text-ink">Audit Events / 审计事件</h2>
         <JsonViewer data={auditEvents} />
       </section>
       <section className="grid gap-4 lg:grid-cols-2">
         <div>
-          <h2 className="mb-3 text-sm font-semibold text-ink">Eval Results</h2>
+          <h2 className="mb-3 text-sm font-semibold text-ink">Eval Results / 评估结果</h2>
           <JsonViewer data={evalResults} />
         </div>
         <div>
-          <h2 className="mb-3 text-sm font-semibold text-ink">Optimization Suggestions</h2>
+          <h2 className="mb-3 text-sm font-semibold text-ink">Optimization Suggestions / 优化建议</h2>
           <JsonViewer data={suggestions} />
         </div>
       </section>
       {repairPlan ? (
         <section>
-          <h2 className="mb-3 text-sm font-semibold text-ink">Package Repair Plan</h2>
+          <h2 className="mb-3 text-sm font-semibold text-ink">Package Repair Plan / 包修复计划</h2>
           <div className="mb-4 rounded-md border border-line bg-white p-4">
             <div className="grid gap-3 md:grid-cols-[1fr_2fr_auto]">
               <label className="block">
-                <span className="mb-1 block text-xs uppercase text-slate-500">Target version</span>
+                <span className="mb-1 block text-xs uppercase text-slate-500">Target version / 目标版本</span>
                 <input
                   className="w-full rounded-md border border-line px-3 py-2 text-sm"
                   value={repairTargetVersion}
@@ -875,7 +875,7 @@ export default function GovernancePage() {
                 />
               </label>
               <label className="block">
-                <span className="mb-1 block text-xs uppercase text-slate-500">Reason</span>
+                <span className="mb-1 block text-xs uppercase text-slate-500">Reason / 原因</span>
                 <input
                   className="w-full rounded-md border border-line px-3 py-2 text-sm"
                   value={repairReason}
@@ -889,7 +889,7 @@ export default function GovernancePage() {
                   onClick={previewRepairCandidate}
                   type="button"
                 >
-                  {repairPreviewing ? "Previewing..." : "Preview"}
+                  {repairPreviewing ? "Previewing... / 预览中..." : "Preview / 预览"}
                 </button>
                 <button
                   className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
@@ -897,7 +897,7 @@ export default function GovernancePage() {
                   onClick={applyRepairCandidate}
                   type="button"
                 >
-                  {repairApplying ? "Creating..." : "Create"}
+                  {repairApplying ? "Creating... / 创建中..." : "Create / 创建"}
                 </button>
               </div>
             </div>
@@ -905,10 +905,10 @@ export default function GovernancePage() {
               <table className="w-full text-left text-sm">
                 <thead className="bg-field text-xs uppercase text-slate-600">
                   <tr>
-                    <th className="px-3 py-2">Apply</th>
-                    <th className="px-3 py-2">Operation</th>
-                    <th className="px-3 py-2">Target</th>
-                    <th className="px-3 py-2">Action</th>
+                    <th className="px-3 py-2">Apply / 应用</th>
+                    <th className="px-3 py-2">Operation / 操作</th>
+                    <th className="px-3 py-2">Target / 目标</th>
+                    <th className="px-3 py-2">Action / 动作</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1003,22 +1003,22 @@ function RepairImpactPanel({ preview }: { preview: RepairImpactPreview }) {
   return (
     <div className="rounded-md border border-line bg-field p-3">
       <div className="grid gap-3 text-sm md:grid-cols-4">
-        <RepairImpactStat label="Changes" value={preview.change_count} />
-        <RepairImpactStat label="Fields" value={`${preview.field_impact_count}/${preview.field_impact_limit}`} />
-        <RepairImpactStat label="Warnings" value={preview.validation_impact.warning_count} />
-        <RepairImpactStat label="Valid" value={preview.validation_impact.valid ? "Yes" : "No"} />
+        <RepairImpactStat label="Changes / 变更" value={preview.change_count} />
+        <RepairImpactStat label="Fields / 字段" value={`${preview.field_impact_count}/${preview.field_impact_limit}`} />
+        <RepairImpactStat label="Warnings / 警告" value={preview.validation_impact.warning_count} />
+        <RepairImpactStat label="Valid / 有效" value={preview.validation_impact.valid ? "Yes / 是" : "No / 否"} />
       </div>
       <div className="mt-3 grid gap-3 text-xs text-slate-700 md:grid-cols-3">
         <div>
-          <p className="mb-1 font-semibold uppercase text-slate-500">Sections</p>
+          <p className="mb-1 font-semibold uppercase text-slate-500">Sections / 区块</p>
           <p className="break-words">{preview.impacted_sections.join(", ") || "none"}</p>
         </div>
         <div>
-          <p className="mb-1 font-semibold uppercase text-slate-500">Release Gates</p>
+          <p className="mb-1 font-semibold uppercase text-slate-500">Release Gates / 发布门禁</p>
           <p className="break-words">{preview.release_gate_impacts.join(", ") || "none"}</p>
         </div>
         <div>
-          <p className="mb-1 font-semibold uppercase text-slate-500">Risk Counts</p>
+          <p className="mb-1 font-semibold uppercase text-slate-500">Risk Counts / 风险计数</p>
           <p className="break-words">
             {riskEntries.length ? riskEntries.map(([key, value]) => `${key}: ${value}`).join(", ") : "none"}
           </p>
@@ -1028,10 +1028,10 @@ function RepairImpactPanel({ preview }: { preview: RepairImpactPreview }) {
         <table className="w-full text-left text-xs">
           <thead className="bg-field uppercase text-slate-500">
             <tr>
-              <th className="px-2 py-2">Field</th>
-              <th className="px-2 py-2">Section</th>
-              <th className="px-2 py-2">Risk</th>
-              <th className="px-2 py-2">Reason</th>
+              <th className="px-2 py-2">Field / 字段</th>
+              <th className="px-2 py-2">Section / 区块</th>
+              <th className="px-2 py-2">Risk / 风险</th>
+              <th className="px-2 py-2">Reason / 原因</th>
             </tr>
           </thead>
           <tbody>
@@ -1046,7 +1046,7 @@ function RepairImpactPanel({ preview }: { preview: RepairImpactPreview }) {
           </tbody>
         </table>
       </div>
-      {preview.truncated ? <p className="mt-2 text-xs text-slate-500">Field list truncated.</p> : null}
+      {preview.truncated ? <p className="mt-2 text-xs text-slate-500">Field list truncated. 字段列表已截断。</p> : null}
     </div>
   );
 }
@@ -1069,8 +1069,8 @@ function formatDateTime(value: string) {
 }
 
 function runQueueLabel(status: string) {
-  if (status === "paused") return "approval";
-  if (status === "failed" || status === "rejected" || status === "canceled") return "recovery";
-  if (status === "completed") return "terminal";
-  return "monitor";
+  if (status === "paused") return "approval / 审批";
+  if (status === "failed" || status === "rejected" || status === "canceled") return "recovery / 恢复";
+  if (status === "completed") return "terminal / 终态";
+  return "monitor / 监控";
 }

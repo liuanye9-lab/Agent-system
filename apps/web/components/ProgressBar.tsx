@@ -8,7 +8,7 @@ export function ProgressBar({ value, label }: ProgressBarProps) {
   return (
     <div className="w-full">
       <div className="mb-1 flex items-center justify-between text-xs text-slate-600">
-        <span>{label ?? "Progress"}</span>
+        <span>{label ?? "Progress / 进度"}</span>
         <span>{normalized}%</span>
       </div>
       <div className="h-2 overflow-hidden rounded-sm bg-slate-200">

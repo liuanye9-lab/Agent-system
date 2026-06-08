@@ -9,7 +9,9 @@ const config: Config = {
         field: "#F6F7F9",
         line: "#D8DEE6",
         accent: "#146C75",
-        amber: "#B7791F"
+        amber: "#B7791F",
+        panel: "#FFFFFF",
+        muted: "#64748B"
       }
     }
   },

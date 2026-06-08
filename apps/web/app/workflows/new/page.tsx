@@ -103,7 +103,7 @@ export default function NewWorkflowPage() {
       });
       setResult(response);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Failed to generate workflow");
+      setError(caught instanceof Error ? caught.message : "Failed to generate workflow / 生成工作流失败");
     } finally {
       setLoading(false);
     }
@@ -138,11 +138,11 @@ export default function NewWorkflowPage() {
     try {
       payload = JSON.parse(packageJsonText);
     } catch {
-      setError("Workflow package JSON must be valid JSON");
+      setError("Workflow package JSON must be valid JSON / 工作流包 JSON 必须是有效 JSON");
       return null;
     }
     if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
-      setError("Workflow package JSON must be a JSON object");
+      setError("Workflow package JSON must be a JSON object / 工作流包 JSON 必须是 JSON 对象");
       return null;
     }
     return payload as Record<string, unknown>;
@@ -163,7 +163,7 @@ export default function NewWorkflowPage() {
       });
       setPackageResult(response);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Failed to validate package");
+      setError(caught instanceof Error ? caught.message : "Failed to validate package / 校验包失败");
     } finally {
       setPackageBusy(null);
     }
@@ -188,7 +188,7 @@ export default function NewWorkflowPage() {
       );
       setPackageResult(response);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Failed to import package");
+      setError(caught instanceof Error ? caught.message : "Failed to import package / 导入包失败");
     } finally {
       setPackageBusy(null);
     }
@@ -198,11 +198,15 @@ export default function NewWorkflowPage() {
   const importedVersion = packageResult?.workflow_package?.version ?? packageResult?.version;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-      <section>
-        <h1 className="text-2xl font-semibold text-ink">New Workflow</h1>
+    <div className="grid gap-6 lg:grid-cols-[0.82fr_1.18fr]">
+      <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Builder / 构建器</p>
+          <h1 className="mt-2 text-2xl font-semibold text-ink">New Workflow / 新建工作流</h1>
+          <p className="mt-1 text-sm text-slate-600">Describe the business process or import a package JSON. 描述业务流程，或导入工作流包 JSON。</p>
+        </div>
         <form className="mt-4 space-y-4" onSubmit={onSubmit}>
-          <FieldLabel label="Request">
+          <FieldLabel label="Request / 需求描述">
             <textarea
               className="min-h-32 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
               value={userRequest}
@@ -210,21 +214,21 @@ export default function NewWorkflowPage() {
             />
           </FieldLabel>
           <div className="grid gap-3 md:grid-cols-2">
-            <FieldLabel label="Workflow ID">
+            <FieldLabel label="Workflow ID / 工作流 ID">
               <input
                 className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none focus:border-accent"
                 value={workflowId}
                 onChange={(event) => setWorkflowId(event.target.value)}
               />
             </FieldLabel>
-            <FieldLabel label="Version">
+            <FieldLabel label="Version / 版本">
               <input
                 className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none focus:border-accent"
                 value={version}
                 onChange={(event) => setVersion(event.target.value)}
               />
             </FieldLabel>
-            <FieldLabel label="Name">
+            <FieldLabel label="Name / 名称">
               <input
                 className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none focus:border-accent"
                 value={name}
@@ -238,10 +242,10 @@ export default function NewWorkflowPage() {
                 onChange={(event) => setSaveAsCurrent(event.target.checked)}
                 className="h-4 w-4 rounded border-line"
               />
-              Save as current version
+              Save as current version / 保存为当前版本
             </label>
           </div>
-          <FieldLabel label="Business Goal">
+          <FieldLabel label="Business Goal / 业务目标">
             <textarea
               className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
               value={businessGoal}
@@ -249,14 +253,14 @@ export default function NewWorkflowPage() {
             />
           </FieldLabel>
           <div className="grid gap-3 md:grid-cols-2">
-            <FieldLabel label="Start Event">
+            <FieldLabel label="Start Event / 触发事件">
               <textarea
                 className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
                 value={startEvent}
                 onChange={(event) => setStartEvent(event.target.value)}
               />
             </FieldLabel>
-            <FieldLabel label="End State">
+            <FieldLabel label="End State / 结束状态">
               <textarea
                 className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
                 value={endState}
@@ -265,35 +269,35 @@ export default function NewWorkflowPage() {
             </FieldLabel>
           </div>
           <div className="grid gap-3 md:grid-cols-2">
-            <FieldLabel label="Target Users">
+            <FieldLabel label="Target Users / 目标用户">
               <textarea
                 className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
                 value={targetUsersText}
                 onChange={(event) => setTargetUsersText(event.target.value)}
               />
             </FieldLabel>
-            <FieldLabel label="Human Roles">
+            <FieldLabel label="Human Roles / 人类角色">
               <textarea
                 className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
                 value={humanRolesText}
                 onChange={(event) => setHumanRolesText(event.target.value)}
               />
             </FieldLabel>
-            <FieldLabel label="Success Metrics">
+            <FieldLabel label="Success Metrics / 成功指标">
               <textarea
                 className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
                 value={successMetricsText}
                 onChange={(event) => setSuccessMetricsText(event.target.value)}
               />
             </FieldLabel>
-            <FieldLabel label="Constraints">
+            <FieldLabel label="Constraints / 约束">
               <textarea
                 className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
                 value={constraintsText}
                 onChange={(event) => setConstraintsText(event.target.value)}
               />
             </FieldLabel>
-            <FieldLabel label="Risks">
+            <FieldLabel label="Risks / 风险">
               <textarea
                 className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
                 value={risksText}
@@ -303,27 +307,27 @@ export default function NewWorkflowPage() {
           </div>
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-sm font-semibold text-ink">Process Nodes</h2>
+              <h2 className="text-sm font-semibold text-ink">Process Nodes / 流程节点</h2>
               <button
                 type="button"
                 onClick={addNode}
                 className="inline-flex items-center gap-2 rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-ink hover:border-accent"
               >
                 <Plus className="h-4 w-4" aria-hidden />
-                Add Node
+                Add Node / 添加节点
               </button>
             </div>
             {processNodes.map((node) => (
-              <div key={node.id} className="rounded-md border border-line bg-white p-3">
+              <div key={node.id} className="rounded-md border border-line bg-field p-3">
                 <div className="grid gap-3 md:grid-cols-2">
-                  <FieldLabel label="Node Name">
+                  <FieldLabel label="Node Name / 节点名称">
                     <input
                       className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none focus:border-accent"
                       value={node.name}
                       onChange={(event) => updateNode(node.id, { name: event.target.value })}
                     />
                   </FieldLabel>
-                  <FieldLabel label="Node Type">
+                  <FieldLabel label="Node Type / 节点类型">
                     <select
                       className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none focus:border-accent"
                       value={node.node_type}
@@ -337,7 +341,7 @@ export default function NewWorkflowPage() {
                       <option value="write_node">write_node</option>
                     </select>
                   </FieldLabel>
-                  <FieldLabel label="Owner Role">
+                  <FieldLabel label="Owner Role / 负责人角色">
                     <input
                       className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none focus:border-accent"
                       value={node.owner_role}
@@ -351,16 +355,16 @@ export default function NewWorkflowPage() {
                       onChange={(event) => updateNode(node.id, { requires_approval: event.target.checked })}
                       className="h-4 w-4 rounded border-line"
                     />
-                    Requires approval
+                    Requires approval / 需要审批
                   </label>
-                  <FieldLabel label="Description">
+                  <FieldLabel label="Description / 描述">
                     <textarea
                       className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
                       value={node.description}
                       onChange={(event) => updateNode(node.id, { description: event.target.value })}
                     />
                   </FieldLabel>
-                  <FieldLabel label="Done Condition">
+                  <FieldLabel label="Done Condition / 完成条件">
                     <textarea
                       className="min-h-20 w-full rounded-md border border-line bg-white p-3 text-sm outline-none focus:border-accent"
                       value={node.done_condition}
@@ -374,7 +378,7 @@ export default function NewWorkflowPage() {
                   className="mt-3 inline-flex items-center gap-2 rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-700 hover:border-red-700"
                 >
                   <Trash2 className="h-4 w-4" aria-hidden />
-                  Remove
+                  Remove / 移除
                 </button>
               </div>
             ))}
@@ -385,13 +389,13 @@ export default function NewWorkflowPage() {
             disabled={loading}
           >
             <Sparkles className="h-4 w-4" aria-hidden />
-            {loading ? "Generating..." : "生成 Workflow Package"}
+            {loading ? "Generating... / 生成中..." : "Generate Workflow Package / 生成工作流包"}
           </button>
         </form>
         {error ? <p className="mt-3 text-sm text-red-700">{error}</p> : null}
         {result ? (
           <div className="mt-5 rounded-md border border-line bg-white p-4">
-            <h2 className="text-sm font-semibold text-ink">Clarifying Questions</h2>
+            <h2 className="text-sm font-semibold text-ink">Clarifying Questions / 澄清问题</h2>
             <ul className="mt-3 space-y-2 text-sm text-slate-700">
               {result.clarifying_questions.map((question) => (
                 <li key={question}>{question}</li>
@@ -401,13 +405,13 @@ export default function NewWorkflowPage() {
               href={`/workflows/${result.workflow_package.workflow_id}`}
               className="mt-4 inline-flex text-sm font-medium text-accent hover:underline"
             >
-              Open workflow detail
+              Open workflow detail / 打开工作流详情
             </Link>
           </div>
         ) : null}
         <div className="mt-6 space-y-4 border-t border-line pt-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold text-ink">Package Import</h2>
+            <h2 className="text-sm font-semibold text-ink">Package Import / 包导入</h2>
             <label className="flex items-center gap-2 text-sm text-slate-700">
               <input
                 type="checkbox"
@@ -415,7 +419,7 @@ export default function NewWorkflowPage() {
                 onChange={(event) => setImportSaveAsCurrent(event.target.checked)}
                 className="h-4 w-4 rounded border-line"
               />
-              Save as current version
+              Save as current version / 保存为当前版本
             </label>
           </div>
           <textarea
@@ -432,7 +436,7 @@ export default function NewWorkflowPage() {
               disabled={packageBusy !== null}
             >
               <Check className="h-4 w-4" aria-hidden />
-              {packageBusy === "validate" ? "Validating..." : "Validate Package"}
+              {packageBusy === "validate" ? "Validating... / 校验中..." : "Validate Package / 校验包"}
             </button>
             <button
               type="button"
@@ -441,22 +445,22 @@ export default function NewWorkflowPage() {
               disabled={packageBusy !== null}
             >
               <Upload className="h-4 w-4" aria-hidden />
-              {packageBusy === "import" ? "Importing..." : "Import Package"}
+              {packageBusy === "import" ? "Importing... / 导入中..." : "Import Package / 导入包"}
             </button>
           </div>
           {packageResult ? (
             <div className="rounded-md border border-line bg-white p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h3 className="text-sm font-semibold text-ink">Package Result</h3>
+                  <h3 className="text-sm font-semibold text-ink">Package Result / 包处理结果</h3>
                   <p className="mt-1 text-xs text-slate-500">
                     {packageResult.valid === false
-                      ? "Validation failed"
+                      ? "Validation failed / 校验失败"
                       : packageResult.saved_as_current === undefined
-                        ? "Validation completed"
+                        ? "Validation completed / 校验完成"
                         : packageResult.saved_as_current
-                          ? "Saved as current version"
-                          : "Saved as candidate version"}
+                          ? "Saved as current version / 已保存为当前版本"
+                          : "Saved as candidate version / 已保存为候选版本"}
                   </p>
                 </div>
                 {packageResult.valid !== false && packageResult.workflow_package && importedWorkflowId ? (
@@ -464,7 +468,7 @@ export default function NewWorkflowPage() {
                     href={`/workflows/${importedWorkflowId}${importedVersion ? `?version=${importedVersion}` : ""}`}
                     className="text-sm font-medium text-accent hover:underline"
                   >
-                    Open workflow detail
+                    Open workflow detail / 打开工作流详情
                   </Link>
                 ) : null}
               </div>
@@ -476,7 +480,7 @@ export default function NewWorkflowPage() {
         </div>
       </section>
       <section>
-        <h2 className="mb-4 text-sm font-semibold text-ink">Workflow Package JSON</h2>
+        <h2 className="mb-4 text-sm font-semibold text-ink">Workflow Package JSON / 工作流包 JSON</h2>
         <JsonViewer data={result?.workflow_package ?? { status: "waiting_for_generation" }} />
       </section>
     </div>
