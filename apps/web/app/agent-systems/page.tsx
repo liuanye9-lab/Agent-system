@@ -1,9 +1,19 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { type FormEvent, type ReactNode, useState } from "react";
 import Link from "next/link";
-import { Bot, CheckCircle2, GitBranch, MessageSquare, Save, ShieldAlert, Sparkles, Workflow } from "lucide-react";
-import { JsonViewer } from "../../components/JsonViewer";
+import {
+  Bot,
+  Check,
+  CheckCircle2,
+  GitBranch,
+  Loader2,
+  MessageSquare,
+  Send,
+  ShieldAlert,
+  Sparkles,
+  Wand2
+} from "lucide-react";
 import { apiFetch, getLocalAuthHeaders } from "../../lib/api";
 
 type TopologyType = "single_agent" | "workflow_agent" | "manager_subagents" | "multi_agent_workflow";
@@ -21,9 +31,6 @@ type Subagent = {
   name: string;
   specialty: string;
   description: string;
-  when_to_use: string;
-  allowed_tools: string[];
-  context_policy: string;
   human_approval_required: boolean;
 };
 
@@ -32,7 +39,6 @@ type WorkflowNode = {
   name: string;
   node_type: string;
   assigned_agent_id?: string | null;
-  dependencies: string[];
   approval_required: boolean;
 };
 
@@ -44,9 +50,7 @@ type Blueprint = {
   expected_outputs: string[];
   topology_type: TopologyType;
   mother_agent?: {
-    agent_id: string;
     name: string;
-    role: string;
     responsibility: string;
     allowed_subagents: string[];
   } | null;
@@ -64,7 +68,6 @@ type SessionResponse = {
   session_id: string;
   assistant_message: string;
   clarifying_questions: string[];
-  extracted_brief: Record<string, unknown>;
   topology_recommendation: Recommendation;
   current_blueprint: Blueprint;
 };
@@ -75,27 +78,51 @@ type CandidateResponse = {
     name: string;
     version: string;
   };
-  validation_report: unknown;
   saved_as_current: boolean;
 };
 
 const topologyLabels: Record<TopologyType, string> = {
   single_agent: "单 Agent",
-  workflow_agent: "单 Agent 工作流",
-  manager_subagents: "母 Agent + Subagents",
+  workflow_agent: "流程型 Agent",
+  manager_subagents: "母 Agent 协作",
   multi_agent_workflow: "多 Agent 工作流"
 };
 
+const examples = [
+  "帮我做一个客户跟进 Agent：自动整理沟通记录，提醒下一步，并输出周报",
+  "我想要一个学习助手，能拆解目标、安排每日任务，并检查复盘",
+  "做一个投研 Agent，跟踪新闻和财报，只输出机会、风险和观察清单"
+];
+
+function nextCandidateVersion() {
+  const now = new Date();
+  const stamp = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(now.getDate()).padStart(2, "0"),
+    String(now.getHours()).padStart(2, "0"),
+    String(now.getMinutes()).padStart(2, "0")
+  ].join("");
+  return `0.1.0-chat-${stamp}`;
+}
+
 export default function AgentSystemsPage() {
-  const [requestText, setRequestText] = useState("我想做一个帮我做投资研究的 Agent，能看新闻和财报，最后输出风险提示和观察报告");
-  const [version, setVersion] = useState("0.2.0-agent-system");
+  const [requestText, setRequestText] = useState("");
+  const [submittedText, setSubmittedText] = useState("");
+  const [candidateVersion, setCandidateVersion] = useState(nextCandidateVersion);
   const [session, setSession] = useState<SessionResponse | null>(null);
   const [candidate, setCandidate] = useState<CandidateResponse | null>(null);
   const [loading, setLoading] = useState<"session" | "candidate" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const blueprint = session?.current_blueprint;
+
   async function startSession(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!requestText.trim()) {
+      setError("先告诉我你想让 Agent 做什么");
+      return;
+    }
     setLoading("session");
     setError(null);
     setCandidate(null);
@@ -103,11 +130,13 @@ export default function AgentSystemsPage() {
       const response = await apiFetch<SessionResponse>("/api/agent-systems/sessions", {
         method: "POST",
         headers: await getLocalAuthHeaders("workflow-admin"),
-        body: JSON.stringify({ user_request: requestText })
+        body: JSON.stringify({ user_request: requestText.trim() })
       });
+      setSubmittedText(requestText.trim());
+      setCandidateVersion(nextCandidateVersion());
       setSession(response);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Agent System session failed / 会话创建失败");
+      setError(caught instanceof Error ? caught.message : "会话创建失败");
     } finally {
       setLoading(null);
     }
@@ -123,213 +152,193 @@ export default function AgentSystemsPage() {
       const response = await apiFetch<CandidateResponse>(`/api/agent-systems/sessions/${session.session_id}/candidate`, {
         method: "POST",
         headers: await getLocalAuthHeaders("workflow-admin"),
-        body: JSON.stringify({ version })
+        body: JSON.stringify({ version: candidateVersion })
       });
       setCandidate(response);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Candidate save failed / 候选版本保存失败");
+      setError(caught instanceof Error ? caught.message : "候选版本保存失败");
     } finally {
       setLoading(null);
     }
   }
 
-  const blueprint = session?.current_blueprint;
-
   return (
-    <div className="space-y-5">
-      <section className="page-band">
-        <div>
-          <p className="section-kicker">Agent System Builder / 智能体系统搭建器</p>
-          <h1 className="page-heading">Chat-first Agent system creation / 对话式创建智能体系统</h1>
-          <p className="page-subtitle">
-            默认入口只需要描述需求。系统会先反问、判断形态，再生成可审查的 Agent 系统蓝图，确认后只保存 candidate。
-          </p>
+    <div className="chat-workspace">
+      <section className="chat-thread" aria-label="Agent Builder conversation">
+        <div className="chat-hero">
+          <span className="agent-avatar">
+            <Bot className="h-7 w-7" aria-hidden />
+          </span>
+          <div>
+            <h1>告诉我你想让 Agent 做什么</h1>
+            <p>用自然语言说目标就行，我会自动整理成可运行的 Agent 方案，不让你填技术表格</p>
+          </div>
         </div>
-        <span className="status-pill status-accent">Candidate only / 不直接上线</span>
-      </section>
 
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,560px)_1fr]">
-        <form onSubmit={startSession} className="section-panel space-y-4">
-          <div className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-accent" aria-hidden />
-            <h2 className="section-title">默认对话窗口</h2>
-          </div>
-          <label className="form-label">
-            <span className="form-label-text">你的需求</span>
-            <textarea
-              className="control-textarea min-h-44"
-              value={requestText}
-              onChange={(event) => setRequestText(event.target.value)}
-            />
-          </label>
-          <div className="flex flex-wrap items-end gap-3">
-            <label className="form-label min-w-52">
-              <span className="form-label-text">Candidate version</span>
-              <input className="control-input w-full" value={version} onChange={(event) => setVersion(event.target.value)} />
-            </label>
-            <button className="control-button-primary" type="submit" disabled={loading !== null}>
-              <Sparkles className="h-4 w-4" aria-hidden />
-              生成蓝图
-            </button>
-            <button className="control-button" type="button" onClick={saveCandidate} disabled={!session || loading !== null}>
-              <Save className="h-4 w-4" aria-hidden />
-              保存 candidate
-            </button>
-          </div>
-          {error ? <p className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
+        <div className="message-list">
+          <MessageBubble role="assistant">
+            你可以直接说：“帮我做一个客户跟进 Agent”，我会判断该用单 Agent、母 Agent 还是多 Agent 流程
+          </MessageBubble>
+
+          {session ? <MessageBubble role="user">{submittedText}</MessageBubble> : null}
+
           {session ? (
-            <div className="rounded-md border border-line bg-field p-3 text-sm leading-6 text-slate-700">
+            <MessageBubble role="assistant">
               {session.assistant_message}
+              {blueprint ? <PlanPreview blueprint={blueprint} recommendation={session.topology_recommendation} /> : null}
+            </MessageBubble>
+          ) : null}
+
+          {session?.clarifying_questions.length ? (
+            <MessageBubble role="assistant">
+              <p className="text-sm font-semibold text-ink">我还会自动追问这几件事</p>
+              <div className="mt-3 grid gap-2">
+                {session.clarifying_questions.slice(0, 3).map((question) => (
+                  <button
+                    key={question}
+                    type="button"
+                    className="question-row"
+                    onClick={() => setRequestText((current) => `${current.trim()}\n${question}：`)}
+                  >
+                    <MessageSquare className="h-4 w-4" aria-hidden />
+                    <span>{question}</span>
+                  </button>
+                ))}
+              </div>
+            </MessageBubble>
+          ) : null}
+
+          {candidate ? (
+            <MessageBubble role="assistant">
+              <div className="success-strip">
+                <CheckCircle2 className="h-5 w-5" aria-hidden />
+                <div>
+                  <p className="font-semibold">候选版本已保存</p>
+                  <p>
+                    {candidate.workflow_package.workflow_id}@{candidate.workflow_package.version}
+                  </p>
+                </div>
+              </div>
+              <Link className="inline-flex-link mt-3" href={`/workflows/${candidate.workflow_package.workflow_id}`}>
+                打开高级详情
+              </Link>
+            </MessageBubble>
+          ) : null}
+        </div>
+
+        {error ? <div className="chat-error">{error}</div> : null}
+
+        <form onSubmit={startSession} className="composer">
+          {!session ? (
+            <div className="quick-prompts" aria-label="Examples">
+              {examples.map((example) => (
+                <button key={example} type="button" onClick={() => setRequestText(example)}>
+                  <Wand2 className="h-4 w-4" aria-hidden />
+                  <span>{example}</span>
+                </button>
+              ))}
             </div>
           ) : null}
+
+          <div className="composer-row">
+            <textarea
+              aria-label="告诉我你想让 Agent 做什么"
+              value={requestText}
+              onChange={(event) => setRequestText(event.target.value)}
+              placeholder={session ? "继续补充你的想法..." : "描述你想让 Agent 帮你完成的事..."}
+              rows={2}
+            />
+            <button className="icon-send" type="submit" disabled={loading !== null} aria-label="生成方案">
+              {loading === "session" ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> : <Send className="h-5 w-5" aria-hidden />}
+            </button>
+          </div>
+
+          <div className="composer-actions">
+            <span>{session ? "方案已生成，可以继续补充，也可以保存候选版本" : "不会直接上线，先生成可审查方案"}</span>
+            <button className="save-candidate-button" type="button" onClick={saveCandidate} disabled={!session || loading !== null}>
+              {loading === "candidate" ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Sparkles className="h-4 w-4" aria-hidden />}
+              保存候选版本
+            </button>
+          </div>
         </form>
-
-        <div className="space-y-4">
-          {blueprint ? (
-            <>
-              <div className="grid gap-4 md:grid-cols-3">
-                <InfoCard title="当前理解" icon={Bot} value={blueprint.name} detail={blueprint.primary_goal} />
-                <InfoCard
-                  title="推荐形态"
-                  icon={GitBranch}
-                  value={topologyLabels[blueprint.topology_type]}
-                  detail={`${Math.round(session.topology_recommendation.confidence * 100)}% confidence`}
-                />
-                <InfoCard title="上线风险" icon={ShieldAlert} value={blueprint.risk_level} detail={blueprint.release_policy} />
-              </div>
-
-              <section className="section-panel">
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <h2 className="section-title">还缺什么信息</h2>
-                  <span className="status-pill">{session.clarifying_questions.length} questions</span>
-                </div>
-                <div className="grid gap-2 md:grid-cols-3">
-                  {session.clarifying_questions.map((question, index) => (
-                    <div key={question} className="rounded-md border border-line bg-[#fbfcfd] p-3 text-sm leading-5 text-slate-700">
-                      <span className="mb-2 block text-xs font-semibold text-accent">Q{index + 1}</span>
-                      {question}
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              <section className="grid gap-4 lg:grid-cols-[360px_1fr]">
-                <div className="section-panel">
-                  <h2 className="section-title">母 Agent</h2>
-                  {blueprint.mother_agent ? (
-                    <div className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
-                      <p className="font-semibold text-ink">{blueprint.mother_agent.name}</p>
-                      <p>{blueprint.mother_agent.responsibility}</p>
-                      <p className="text-xs text-slate-500">Allowed subagents: {blueprint.mother_agent.allowed_subagents.length}</p>
-                    </div>
-                  ) : (
-                    <p className="mt-3 text-sm text-slate-500">当前形态不需要母 Agent。</p>
-                  )}
-                </div>
-                <div className="section-panel">
-                  <h2 className="section-title">Subagents</h2>
-                  <div className="mt-3 grid gap-3 md:grid-cols-2">
-                    {blueprint.subagents.length > 0 ? blueprint.subagents.map((subagent) => (
-                      <div key={subagent.subagent_id} className="rounded-md border border-line bg-white p-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-semibold text-ink">{subagent.name}</p>
-                            <p className="text-xs text-slate-500">{subagent.specialty}</p>
-                          </div>
-                          {subagent.human_approval_required ? <span className="status-pill status-warning">approval</span> : null}
-                        </div>
-                        <p className="mt-3 text-sm leading-6 text-slate-700">{subagent.description}</p>
-                        <p className="mt-2 text-xs text-slate-500">Tools: {subagent.allowed_tools.join(", ") || "none"} · Context: {subagent.context_policy}</p>
-                      </div>
-                    )) : (
-                      <p className="text-sm text-slate-500">当前建议从单 Agent 开始，不强行拆分。</p>
-                    )}
-                  </div>
-                </div>
-              </section>
-
-              <section className="section-panel">
-                <div className="mb-4 flex items-center gap-2">
-                  <Workflow className="h-5 w-5 text-accent" aria-hidden />
-                  <h2 className="section-title">简单 Agent 蓝图流程</h2>
-                </div>
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                  {blueprint.workflow_nodes.map((node) => (
-                    <div key={node.node_id} className="rounded-md border border-line bg-[#fbfcfd] p-3">
-                      <p className="text-sm font-semibold text-ink">{node.name}</p>
-                      <p className="mt-1 text-xs text-slate-500">{node.node_type}</p>
-                      <p className="mt-2 text-xs text-slate-600">Agent: {node.assigned_agent_id || "default"}</p>
-                      {node.approval_required ? <span className="mt-3 status-pill status-warning">人工审批</span> : null}
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              <section className="grid gap-4 lg:grid-cols-4">
-                <ListCard title="工具需求" items={blueprint.tool_requirements} />
-                <ListCard title="记忆需求" items={blueprint.memory_requirements} />
-                <ListCard title="评测需求" items={blueprint.evaluation_requirements} />
-                <ListCard title="审批需求" items={blueprint.approval_requirements} />
-              </section>
-
-              {candidate ? (
-                <section className="section-panel">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <h2 className="section-title">Candidate saved / 候选版本已保存</h2>
-                      <p className="mt-1 text-sm text-slate-600">
-                        {candidate.workflow_package.workflow_id}@{candidate.workflow_package.version} · saved_as_current={String(candidate.saved_as_current)}
-                      </p>
-                    </div>
-                    <Link className="control-button" href={`/workflows/${candidate.workflow_package.workflow_id}`}>
-                      查看工作流
-                    </Link>
-                  </div>
-                  <div className="mt-4">
-                    <JsonViewer data={candidate.validation_report} />
-                  </div>
-                </section>
-              ) : null}
-            </>
-          ) : (
-            <section className="section-panel flex min-h-96 items-center justify-center text-center">
-              <div>
-                <CheckCircle2 className="mx-auto h-10 w-10 text-accent" aria-hidden />
-                <p className="mt-3 text-sm text-slate-600">输入需求后，这里会显示推荐形态、母 Agent、Subagents、节点、工具、记忆、评测和风险。</p>
-              </div>
-            </section>
-          )}
-        </div>
       </section>
     </div>
   );
 }
 
-function InfoCard({ title, value, detail, icon: Icon }: { title: string; value: string; detail: string; icon: typeof Bot }) {
+function MessageBubble({ role, children }: { role: "assistant" | "user"; children: ReactNode }) {
   return (
-    <div className="metric-card">
-      <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-        <Icon className="h-4 w-4 text-accent" aria-hidden />
-        {title}
-      </div>
-      <p className="mt-2 text-base font-semibold text-ink">{value}</p>
-      <p className="mt-2 line-clamp-3 text-xs leading-5 text-slate-600">{detail}</p>
+    <div className={role === "user" ? "message message-user" : "message message-assistant"}>
+      {role === "assistant" ? (
+        <span className="message-icon">
+          <Bot className="h-4 w-4" aria-hidden />
+        </span>
+      ) : null}
+      <div className="message-body">{children}</div>
     </div>
   );
 }
 
-function ListCard({ title, items }: { title: string; items: string[] }) {
+function PlanPreview({ blueprint, recommendation }: { blueprint: Blueprint; recommendation: Recommendation }) {
+  const steps = blueprint.workflow_nodes.slice(0, 4);
+  const subagents = blueprint.subagents.slice(0, 3);
+
   return (
-    <div className="section-panel">
-      <h2 className="section-title">{title}</h2>
-      <ul className="mt-3 space-y-2 text-sm text-slate-700">
-        {(items.length ? items : ["待确认"]).map((item) => (
-          <li key={item} className="flex gap-2">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden />
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
+    <div className="plan-preview">
+      <div className="plan-header">
+        <div>
+          <p className="plan-eyebrow">生成方案</p>
+          <h2>{blueprint.name}</h2>
+        </div>
+        <span className="soft-tag">可运行预览</span>
+      </div>
+
+      <p className="plan-goal">{blueprint.primary_goal || blueprint.description}</p>
+
+      <div className="plan-facts">
+        <PlanFact icon={GitBranch} label="结构" value={topologyLabels[blueprint.topology_type]} />
+        <PlanFact icon={Check} label="置信度" value={`${Math.round(recommendation.confidence * 100)}%`} />
+        <PlanFact icon={ShieldAlert} label="风险" value={blueprint.risk_level} />
+      </div>
+
+      <div className="plan-section">
+        <p className="plan-section-title">它会怎么工作</p>
+        <div className="step-list">
+          {steps.map((node, index) => (
+            <div key={node.node_id} className="step-row">
+              <span>{index + 1}</span>
+              <div>
+                <p>{node.name}</p>
+                <small>
+                  {node.assigned_agent_id || "默认 Agent"}
+                  {node.approval_required ? " · 需要审批" : ""}
+                </small>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="plan-section compact">
+        <p className="plan-section-title">Agent 分工</p>
+        <div className="agent-chip-row">
+          {blueprint.mother_agent ? <span>{blueprint.mother_agent.name}</span> : null}
+          {subagents.map((subagent) => (
+            <span key={subagent.subagent_id}>{subagent.name}</span>
+          ))}
+          {!blueprint.mother_agent && subagents.length === 0 ? <span>单 Agent 先跑通</span> : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PlanFact({ icon: Icon, label, value }: { icon: typeof GitBranch; label: string; value: string }) {
+  return (
+    <div>
+      <Icon className="h-4 w-4" aria-hidden />
+      <span>{label}</span>
+      <strong>{value}</strong>
     </div>
   );
 }
