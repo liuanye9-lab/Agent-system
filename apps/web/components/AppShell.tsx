@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Activity, BadgeCheck, Gauge, GitBranch, LayoutDashboard, Plus, ShieldCheck, Workflow } from "lucide-react";
+import { Activity, BadgeCheck, Bot, Gauge, GitBranch, LayoutDashboard, Plus, ShieldCheck, Workflow } from "lucide-react";
 import { AuthStatus } from "./AuthStatus";
 
 const navItems = [
   { href: "/", label: "Overview", cn: "总览", icon: LayoutDashboard },
+  { href: "/agent-systems", label: "Agent Builder", cn: "智能体搭建", icon: Bot },
   { href: "/workflows", label: "Workflows", cn: "工作流", icon: Workflow },
   { href: "/runs", label: "Runs", cn: "运行", icon: Activity },
   { href: "/workflows/new", label: "New Workflow", cn: "新建", icon: Plus },

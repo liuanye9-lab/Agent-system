@@ -8,6 +8,7 @@ class NodeType(StrEnum):
     REASONING = "reasoning_node"
     REVIEW = "review_node"
     WRITE = "write_node"
+    SUBAGENT_CALL = "subagent_call"
 
 
 class EdgeType(StrEnum):

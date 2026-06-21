@@ -85,11 +85,11 @@ def _llm_configuration_check() -> dict[str, Any]:
             "provider": "mock",
             "mode": "offline",
         }
-    if settings.llm_provider not in {"http", "openai-compatible"}:
+    if settings.llm_provider not in {"http", "openai-compatible", "agnes"}:
         return {
             "name": "llm_configuration",
             "status": "failed",
-            "message": "AGENT_WORKFLOW_LLM_PROVIDER must be mock, http, or openai-compatible",
+            "message": "AGENT_WORKFLOW_LLM_PROVIDER must be mock, http, openai-compatible, or agnes",
             "provider": settings.llm_provider,
         }
     if not settings.llm_endpoint or not settings.llm_model:

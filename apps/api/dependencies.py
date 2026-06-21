@@ -42,7 +42,7 @@ def _seed_example_workflow(repo: WorkflowRepository) -> None:
 def _build_llm_client() -> LLMClient:
     if settings.llm_provider == "mock":
         return MockLLMClient()
-    if settings.llm_provider in {"http", "openai-compatible"}:
+    if settings.llm_provider in {"http", "openai-compatible", "agnes"}:
         if not settings.llm_endpoint or not settings.llm_model:
             return UnavailableLLMClient(
                 provider=settings.llm_provider,
@@ -50,7 +50,7 @@ def _build_llm_client() -> LLMClient:
                 message="real LLM mode requires AGENT_WORKFLOW_LLM_ENDPOINT and AGENT_WORKFLOW_LLM_MODEL",
             )
         return HttpJSONLLMClient(
-            endpoint=settings.llm_endpoint or "",
+            endpoint=_llm_endpoint_for_provider(settings.llm_provider, settings.llm_endpoint or ""),
             api_key=settings.llm_api_key,
             model=settings.llm_model or "",
             provider=settings.llm_provider,
@@ -61,6 +61,15 @@ def _build_llm_client() -> LLMClient:
         model=settings.llm_model or "",
         message=f"unsupported LLM provider: {settings.llm_provider}",
     )
+
+
+def _llm_endpoint_for_provider(provider: str, endpoint: str) -> str:
+    if provider != "agnes":
+        return endpoint
+    normalized = endpoint.rstrip("/")
+    if normalized.endswith("/chat/completions"):
+        return normalized
+    return f"{normalized}/chat/completions"
 
 
 repository = _build_repository()

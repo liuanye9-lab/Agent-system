@@ -6,6 +6,7 @@ from typing import Any
 from packages.workflow_core.models import ProcessNode, ToolPolicy
 from packages.workflow_core.models.enums import NodeExecutionStatus, NodeType
 from packages.workflow_core.runtime.approval_policy import ApprovalPolicy
+from packages.workflow_core.runtime.subagent_runtime import MockSubAgentRuntime
 from packages.workflow_core.runtime.tool_registry import MockToolRegistry, ToolExecutionContext, ToolRegistry
 
 
@@ -23,9 +24,11 @@ class NodeExecutor:
         self,
         tool_registry: ToolRegistry | None = None,
         approval_policy: ApprovalPolicy | None = None,
+        subagent_runtime: MockSubAgentRuntime | None = None,
     ) -> None:
         self.tool_registry = tool_registry or MockToolRegistry()
         self.approval_policy = approval_policy or ApprovalPolicy()
+        self.subagent_runtime = subagent_runtime or MockSubAgentRuntime()
 
     def execute(
         self,
@@ -68,6 +71,30 @@ class NodeExecutor:
                     "approval_required": True,
                     "reason": approval.reason,
                     "draft_payload": self._node_output(node, input_payload, tool_results=[]),
+                },
+            )
+
+        if node.node_type == NodeType.SUBAGENT_CALL:
+            subagent_result = self.subagent_runtime.execute(node, input_payload)
+            if subagent_result.status != "success":
+                return NodeExecutionResult(
+                    node_id=node.node_id,
+                    status=NodeExecutionStatus.FAILED,
+                    output={"subagent_result": subagent_result.model_dump(mode="json")},
+                    error="; ".join(subagent_result.errors) or "subagent_call_failed",
+                    retryable=False,
+                )
+            return NodeExecutionResult(
+                node_id=node.node_id,
+                status=NodeExecutionStatus.SUCCESS,
+                output={
+                    "summary": subagent_result.summary,
+                    "decision": "return_to_mother_agent",
+                    "risks": subagent_result.structured_output.get("risks", []),
+                    "next_actions": subagent_result.structured_output.get("next_actions", []),
+                    "subagent_result": subagent_result.model_dump(mode="json"),
+                    "input_digest": sorted(input_payload.keys()),
+                    "shadow_mode": shadow_mode,
                 },
             )
 

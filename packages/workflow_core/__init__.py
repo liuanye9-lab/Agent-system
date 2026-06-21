@@ -2,6 +2,10 @@
 
 from packages.workflow_core.models import (
     AgentSpec,
+    AgentSystemBlueprint,
+    AgentTopologyClassifierInput,
+    AgentTopologyRecommendation,
+    AgentTopologyType,
     ActorContext,
     AuditEvent,
     DataContract,
@@ -22,6 +26,10 @@ from packages.workflow_core.models import (
 
 __all__ = [
     "AgentSpec",
+    "AgentSystemBlueprint",
+    "AgentTopologyClassifierInput",
+    "AgentTopologyRecommendation",
+    "AgentTopologyType",
     "ActorContext",
     "AuditEvent",
     "DataContract",

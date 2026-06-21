@@ -1,7 +1,14 @@
 import Link from "next/link";
-import { Activity, ArrowRight, CheckCircle2, GitBranch, Plus, ShieldCheck, Workflow, Wrench } from "lucide-react";
+import { Activity, ArrowRight, Bot, CheckCircle2, GitBranch, Plus, ShieldCheck, Workflow, Wrench } from "lucide-react";
 
 const operatingPanels = [
+  {
+    title: "Agent System Builder",
+    cn: "智能体系统搭建器",
+    icon: Bot,
+    detail: "Chat-first low-friction creation for single agents, workflows, mother agents, and subagents / 对话式低门槛创建单 Agent、工作流、母 Agent 与子 Agent",
+    href: "/agent-systems"
+  },
   {
     title: "Builder Plane",
     cn: "构建平面",
@@ -64,8 +71,15 @@ export default function HomePage() {
 
           <div className="mt-5 flex flex-wrap gap-3">
             <Link
-              href="/workflows/new"
+              href="/agent-systems"
               className="control-button-primary"
+            >
+              <Bot className="h-4 w-4" aria-hidden />
+              New Agent System / 新建智能体系统
+            </Link>
+            <Link
+              href="/workflows/new"
+              className="control-button"
             >
               <Plus className="h-4 w-4" aria-hidden />
               New Workflow / 新建工作流
@@ -99,7 +113,7 @@ export default function HomePage() {
         </aside>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
+      <section className="grid gap-4 lg:grid-cols-4">
         {operatingPanels.map((panel) => {
           const Icon = panel.icon;
           return (

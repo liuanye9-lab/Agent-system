@@ -2,6 +2,15 @@
 
 Agent Workflow Builder is a project-grade foundation for a business process compiler: it turns business know-how into workflow packages, executable DAGs, traces, eval results, and optimization suggestions.
 
+The second product layer is Agent System Builder: a low-friction, chat-first entry for personal users, students, creators, designers, operators, product managers, developers, researchers, small teams, and enterprise teams. Users describe what they want in plain language; the system recommends one of four shapes without requiring them to understand DAGs, `WorkflowPackage`, subagents, tool policies, eval specs, or release gates:
+
+- `single_agent`
+- `workflow_agent`
+- `manager_subagents`
+- `multi_agent_workflow`
+
+The default UI is `/agent-systems`. It asks up to three clarification questions, builds an `AgentSystemBlueprint`, visualizes the mother Agent, Subagents, workflow nodes, tool needs, memory needs, eval needs, approval needs, and risk, then saves a candidate WorkflowPackage only after confirmation. Candidate saves do not replace the current workflow version; promotion still goes through the existing quality, eval, approval, shadow-mode, and release-readiness controls.
+
 The first version defaults to mock LLM and mock tools, with an optional HTTP/OpenAI-compatible LLM adapter for typed Builder Plane generation across problem framing, process architecture, data contracts, tool policies, and eval specs. It is designed to be extended later with LangGraph, PydanticAI, A2A, Phoenix, Langfuse, DeepEval, Ragas, Temporal, PostgreSQL, and a visual graph canvas.
 
 ## Quick Start
@@ -40,6 +49,18 @@ AGENT_WORKFLOW_LLM_MODEL=workflow-framer
 AGENT_WORKFLOW_LLM_API_KEY=replace-with-provider-key
 AGENT_WORKFLOW_LLM_TIMEOUT_SECONDS=30
 ```
+
+Agnes AI can be used through the same OpenAI-compatible Builder Plane adapter. For Agnes, the app accepts the base URL and appends `/chat/completions` internally:
+
+```bash
+export AGENT_WORKFLOW_LLM_PROVIDER=agnes
+export AGENT_WORKFLOW_LLM_ENDPOINT=https://apihub.agnes-ai.com/v1
+export AGENT_WORKFLOW_LLM_MODEL=agnes-2.0-flash
+export AGENT_WORKFLOW_LLM_API_KEY=...
+export AGENT_WORKFLOW_LLM_TIMEOUT_SECONDS=60
+```
+
+Agnes image and video model ids are documented for future media adapters as `agnes-image-2.0-flash` and `agnes-video-v2.0`; the current Builder Plane uses the text model for schema-validated workflow generation.
 
 Frontend:
 

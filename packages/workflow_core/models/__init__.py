@@ -1,6 +1,24 @@
 """Pydantic schemas for workflow packages, runs, evals, and governance."""
 
 from packages.workflow_core.models.agent import AgentSpec
+from packages.workflow_core.models.agent_system import (
+    AgentInteractionMode,
+    AgentSystemBlueprint,
+    AgentTopologyClassifierInput,
+    AgentTopologyRecommendation,
+    AgentTopologyType,
+    AgentWorkflowNode,
+    AgentWorkflowNodeType,
+    CollaborationMode,
+    ContextPolicy,
+    MotherAgentDefinition,
+    SubAgentDefinition,
+    SubAgentPlan,
+    SubAgentResult,
+    SubAgentValidationIssue,
+    SubAgentValidationReport,
+    UserSkillLevel,
+)
 from packages.workflow_core.models.auth import ActorContext
 from packages.workflow_core.models.audit import AuditEvent
 from packages.workflow_core.models.contract import DataContract
@@ -25,14 +43,24 @@ from packages.workflow_core.models.workflow import WorkflowPackage
 
 __all__ = [
     "AgentSpec",
+    "AgentInteractionMode",
+    "AgentSystemBlueprint",
+    "AgentTopologyClassifierInput",
+    "AgentTopologyRecommendation",
+    "AgentTopologyType",
+    "AgentWorkflowNode",
+    "AgentWorkflowNodeType",
     "ActorContext",
     "AuditEvent",
+    "CollaborationMode",
+    "ContextPolicy",
     "DataContract",
     "EdgeType",
     "EvalResult",
     "EvalSpec",
     "EvalType",
     "NodeExecutionStatus",
+    "MotherAgentDefinition",
     "NodeType",
     "OptimizationSuggestion",
     "PackageRepairOperation",
@@ -43,6 +71,11 @@ __all__ = [
     "ProcessNode",
     "ProcessSpec",
     "RiskLevel",
+    "SubAgentDefinition",
+    "SubAgentPlan",
+    "SubAgentResult",
+    "SubAgentValidationIssue",
+    "SubAgentValidationReport",
     "SuggestionType",
     "ToolPolicy",
     "TraceRecord",
@@ -51,4 +84,5 @@ __all__ = [
     "WorkflowRunStatus",
     "WorkflowValidationIssue",
     "WorkflowValidationReport",
+    "UserSkillLevel",
 ]

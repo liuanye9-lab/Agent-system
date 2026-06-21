@@ -17,6 +17,8 @@ class ProcessNode(StrictBaseModel):
     input_contract_id: str
     output_contract_id: str
     tool_ids: list[str] = Field(default_factory=list)
+    assigned_agent_id: str | None = None
+    context_policy: str | None = None
 
 
 class ProcessEdge(StrictBaseModel):
