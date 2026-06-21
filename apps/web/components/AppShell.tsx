@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Bot, History, MessageSquare, Settings, ShieldCheck } from "lucide-react";
+import { Bot, FlaskConical, History, MessageSquare, ShieldCheck } from "lucide-react";
 import { AuthStatus } from "./AuthStatus";
 
 const recentItems = [
@@ -60,11 +60,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="hidden border-t border-line/80 p-4 lg:block">
-            <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
-              <Link className="sidebar-utility" href="/auth">
-                <Settings className="h-4 w-4" aria-hidden />
-                账号设置
-              </Link>
+            <div className="grid grid-cols-1 gap-2">
               <Link className="sidebar-utility" href="/governance">
                 <ShieldCheck className="h-4 w-4" aria-hidden />
                 高级治理
@@ -81,7 +77,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               <p className="text-sm font-semibold text-ink">新建 Agent</p>
               <p className="mt-0.5 text-xs text-slate-500">描述目标，系统自动整理方案</p>
             </div>
-            <AuthStatus />
+            {inSimpleBuilder ? (
+              <span className="inline-flex items-center gap-2 rounded-md border border-[#b7d7dc] bg-[#e6f1f3] px-3 py-2 text-sm font-medium text-accent">
+                <FlaskConical className="h-4 w-4" aria-hidden />
+                本地测试模式
+              </span>
+            ) : (
+              <AuthStatus />
+            )}
           </div>
         </header>
         <main className="mx-auto max-w-[1180px] px-5 py-5 lg:px-8 lg:py-6">{children}</main>
