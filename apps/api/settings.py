@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import os
+from pathlib import Path
 
 
 DEFAULT_AUTH_SECRET_KEY = "local-dev-change-me"
@@ -13,6 +14,21 @@ def parse_csv_setting(value: str | None, default: tuple[str, ...] = ()) -> tuple
         return default
     parsed = tuple(item.strip() for item in value.split(",") if item.strip())
     return parsed or default
+
+
+def load_local_env(path: str = ".env") -> None:
+    env_path = Path(path)
+    if not env_path.exists():
+        return
+    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip("'\""))
+
+
+load_local_env()
 
 
 @dataclass(frozen=True)
