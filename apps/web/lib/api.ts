@@ -41,6 +41,18 @@ export async function getLocalAuthHeaders(role: AuthRole): Promise<Record<string
   return { Authorization: `Bearer ${session.accessToken}` };
 }
 
+export function getWorkflowAdminHeaders(): Record<string, string> {
+  const session = getStoredAuthSession("workflow-admin");
+  if (session) {
+    return { Authorization: `Bearer ${session.accessToken}` };
+  }
+  return {
+    "X-Actor-Id": "local-agent-builder",
+    "X-Actor-Role": "workflow-admin",
+    "X-Actor-Name": "Local Agent Builder"
+  };
+}
+
 export async function signIn(username: string, password: string): Promise<AuthSession> {
   const response = await fetch(`${API_BASE_URL}/api/auth/token`, {
     method: "POST",
