@@ -8,9 +8,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from apps.api.audit import build_audit_event
-from apps.api.dependencies import get_repository
+from apps.api.dependencies import get_llm_client, get_repository
 from apps.api.routes.workflows import dump_model
 from apps.api.security import require_scope
+from packages.workflow_core.adapters import LLMClient
 from packages.workflow_core.agent_system import (
     AgentSystemBlueprintMapper,
     AgentTopologyClassifier,
@@ -18,10 +19,12 @@ from packages.workflow_core.agent_system import (
     SubAgentPlanner,
     SubAgentValidator,
 )
+from packages.workflow_core.builder.llm_json import extract_json_object, is_mock_llm
 from packages.workflow_core.models import (
     ActorContext,
     AgentSystemBlueprint,
     AgentTopologyClassifierInput,
+    AgentTopologyRecommendation,
     AgentTopologyType,
 )
 from packages.workflow_core.models.enums import RiskLevel
@@ -69,9 +72,10 @@ class ValidateSubagentsRequest(BaseModel):
 def create_session(
     request: CreateAgentSystemSessionRequest,
     _actor: ActorContext = Depends(require_scope("workflow:write")),
+    llm: LLMClient = Depends(get_llm_client),
 ) -> dict[str, Any]:
     session_id = f"asb-{uuid4().hex[:12]}"
-    state = _build_session_state(session_id=session_id, user_request=request.user_request)
+    state = _build_session_state(session_id=session_id, user_request=request.user_request, llm=llm)
     _sessions[session_id] = state
     return _dump_session(state)
 
@@ -89,11 +93,12 @@ def append_message(
     session_id: str,
     request: AgentSystemMessageRequest,
     _actor: ActorContext = Depends(require_scope("workflow:write")),
+    llm: LLMClient = Depends(get_llm_client),
 ) -> dict[str, Any]:
     state = _require_session(session_id)
     state["messages"].append({"role": "user", "content": request.message})
     combined_request = f"{state['user_request']}\n{request.message}"
-    state.update(_build_session_state(session_id=session_id, user_request=combined_request))
+    state.update(_build_session_state(session_id=session_id, user_request=combined_request, llm=llm))
     state["messages"].append({"role": "assistant", "content": state["assistant_message"]})
     _sessions[session_id] = state
     return _dump_session(state)
@@ -208,7 +213,46 @@ def _dump_session(state: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _build_session_state(session_id: str, user_request: str) -> dict[str, Any]:
+def _build_session_state(session_id: str, user_request: str, llm: LLMClient | None = None) -> dict[str, Any]:
+    if llm is not None and not is_mock_llm(llm):
+        return _build_llm_session_state(session_id=session_id, user_request=user_request, llm=llm)
+    return _build_rules_session_state(session_id=session_id, user_request=user_request)
+
+
+def _build_llm_session_state(session_id: str, user_request: str, llm: LLMClient) -> dict[str, Any]:
+    try:
+        payload = extract_json_object(llm.complete(_agent_system_prompt(user_request)))
+        blueprint = AgentSystemBlueprint.model_validate(payload["current_blueprint"])
+        recommendation = AgentTopologyRecommendation.model_validate(payload["topology_recommendation"])
+    except Exception as exc:
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "message": "LLM agent system generation failed",
+                "provider": getattr(llm, "provider", "unknown"),
+                "model": getattr(llm, "model", "unknown"),
+                "reason": exc.__class__.__name__,
+            },
+        ) from exc
+    questions = _string_list(payload.get("clarifying_questions"))[:3] or recommendation.suggested_questions[:3]
+    assistant_message = str(payload.get("assistant_message") or _assistant_message(recommendation.topology_type, questions))
+    extracted = _extract_brief(user_request)
+    return {
+        "session_id": session_id,
+        "user_request": user_request,
+        "messages": [{"role": "user", "content": user_request}],
+        "assistant_message": assistant_message,
+        "clarifying_questions": questions,
+        "extracted_brief": extracted,
+        "topology_recommendation": recommendation,
+        "current_blueprint": blueprint,
+        "generation_mode": "llm",
+        "llm_provider": getattr(llm, "provider", "unknown"),
+        "llm_model": getattr(llm, "model", "unknown"),
+    }
+
+
+def _build_rules_session_state(session_id: str, user_request: str) -> dict[str, Any]:
     extracted = _extract_brief(user_request)
     classifier_input = AgentTopologyClassifierInput(
         user_request=user_request,
@@ -232,9 +276,109 @@ def _build_session_state(session_id: str, user_request: str) -> dict[str, Any]:
         "extracted_brief": extracted,
         "topology_recommendation": recommendation,
         "current_blueprint": None,
+        "generation_mode": "rules",
     }
     state["current_blueprint"] = _blueprint_for_state(state)
     return state
+
+
+def _agent_system_prompt(user_request: str) -> str:
+    return f"""
+You are an Agent System architect. Convert the user's request into a real executable agent-system blueprint.
+
+Return one valid JSON object only. Do not include markdown.
+
+Required JSON shape:
+{{
+  "assistant_message": "short Chinese response explaining the generated plan",
+  "clarifying_questions": ["up to 3 concrete follow-up questions"],
+  "topology_recommendation": {{
+    "topology_type": "single_agent | workflow_agent | manager_subagents | multi_agent_workflow",
+    "confidence": 0.0,
+    "reason": "why this topology fits",
+    "suggested_agents": ["agent names or ids"],
+    "suggested_questions": ["up to 3 questions"]
+  }},
+  "current_blueprint": {{
+    "system_id": "lowercase-ascii-id",
+    "name": "Chinese product name",
+    "description": "brief description",
+    "target_user_groups": ["who uses it"],
+    "user_skill_level": "beginner",
+    "primary_goal": "main goal",
+    "expected_outputs": ["concrete outputs"],
+    "interaction_mode": "chat",
+    "topology_type": "same as recommendation",
+    "mother_agent": {{
+      "agent_id": "mother-agent",
+      "name": "manager name",
+      "role": "manager",
+      "responsibility": "what it routes and decides",
+      "system_prompt": "runtime prompt",
+      "planning_policy": "planning policy",
+      "routing_policy": "routing policy",
+      "allowed_tools": [],
+      "allowed_subagents": ["ids matching subagents"],
+      "memory_scope": "session",
+      "output_contract": {{"type": "object"}},
+      "risk_policy": "risk policy"
+    }},
+    "subagents": [
+      {{
+        "subagent_id": "research-subagent",
+        "name": "subagent name",
+        "specialty": "specialty",
+        "description": "description",
+        "when_to_use": "routing condition",
+        "when_not_to_use": "non-routing condition",
+        "task_contract": "input and output contract in words",
+        "input_schema": {{"type": "object"}},
+        "output_schema": {{"type": "object"}},
+        "allowed_tools": [],
+        "memory_scope": "task",
+        "permission_scope": [],
+        "context_policy": "task_only",
+        "human_approval_required": false
+      }}
+    ],
+    "workflow_nodes": [
+      {{
+        "node_id": "manager-plan",
+        "name": "node name",
+        "node_type": "llm_reasoning | tool_call | subagent_call | human_review | memory_read | memory_write | evaluation | final_response",
+        "assigned_agent_id": "mother-agent or subagent id",
+        "input_schema": {{"type": "object"}},
+        "output_schema": {{"type": "object"}},
+        "dependencies": [],
+        "approval_required": false
+      }}
+    ],
+    "tool_requirements": [],
+    "memory_requirements": [],
+    "evaluation_requirements": ["schema validation"],
+    "approval_requirements": [],
+    "observability_requirements": ["trace"],
+    "risk_level": "low | medium | high",
+    "release_policy": "save_candidate_then_promote_after_review"
+  }}
+}}
+
+Rules:
+- This must be a real model-generated plan, not a fixed example.
+- Use the user's actual request to choose agents, tools, workflow nodes, approvals, and memory.
+- If topology is single_agent, mother_agent can be a single generalist and subagents can be [].
+- Every workflow_nodes.assigned_agent_id must reference mother_agent.agent_id or one subagent_id.
+- Keep external write actions approval-gated.
+
+User request:
+{user_request}
+""".strip()
+
+
+def _string_list(value: Any) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [str(item) for item in value if isinstance(item, str) and item.strip()]
 
 
 def _blueprint_for_state(state: dict[str, Any]) -> AgentSystemBlueprint:
