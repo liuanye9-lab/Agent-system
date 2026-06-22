@@ -80,7 +80,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             {inSimpleBuilder ? (
               <span className="inline-flex items-center gap-2 rounded-md border border-[#b7d7dc] bg-[#e6f1f3] px-3 py-2 text-sm font-medium text-accent">
                 <FlaskConical className="h-4 w-4" aria-hidden />
-                本地测试模式
+                模型调度模式
               </span>
             ) : (
               <AuthStatus />
