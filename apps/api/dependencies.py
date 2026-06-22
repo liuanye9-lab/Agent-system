@@ -94,6 +94,10 @@ def get_workflow_builder() -> WorkflowBuilder:
     return workflow_builder
 
 
+def get_llm_client() -> LLMClient:
+    return llm_client
+
+
 def get_workflow_runner() -> WorkflowRunner:
     return workflow_runner
 
