@@ -1,8 +1,10 @@
+const path = require("node:path");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   turbopack: {
-    root: __dirname
+    root: path.join(__dirname, "../..")
   }
 };
 

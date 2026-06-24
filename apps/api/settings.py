@@ -53,6 +53,8 @@ class Settings:
     llm_api_key: str | None = os.getenv("AGENT_WORKFLOW_LLM_API_KEY")
     llm_model: str | None = os.getenv("AGENT_WORKFLOW_LLM_MODEL")
     llm_timeout_seconds: float = float(os.getenv("AGENT_WORKFLOW_LLM_TIMEOUT_SECONDS", "30"))
+    llm_max_tokens: int | None = int(os.getenv("AGENT_WORKFLOW_LLM_MAX_TOKENS")) if os.getenv("AGENT_WORKFLOW_LLM_MAX_TOKENS") else None
+    llm_json_response_format: bool = os.getenv("AGENT_WORKFLOW_LLM_JSON_RESPONSE_FORMAT", "false").lower() == "true"
     seed_example_workflow: bool = os.getenv("AGENT_WORKFLOW_SEED_EXAMPLE_WORKFLOW", "true").lower() == "true"
     run_retention_days: int = int(os.getenv("AGENT_WORKFLOW_RUN_RETENTION_DAYS", "90"))
     eval_retention_days: int = int(os.getenv("AGENT_WORKFLOW_EVAL_RETENTION_DAYS", "365"))

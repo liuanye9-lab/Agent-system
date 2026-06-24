@@ -2,9 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from packages.workflow_core.adapters import HttpJSONLLMClient, LLMClient, MockLLMClient
-from packages.workflow_core.builder import WorkflowBuilder
-from packages.workflow_core.governance import EvalRunner, MetricCollector, OptimizationLoop, TraceStore
+from packages.workflow_core.adapters.http_llm import HttpJSONLLMClient
+from packages.workflow_core.adapters.llm import LLMClient
+from packages.workflow_core.adapters.mock_llm import MockLLMClient
+from packages.workflow_core.builder.workflow_builder import WorkflowBuilder
+from packages.workflow_core.governance.eval_runner import EvalRunner
+from packages.workflow_core.governance.metrics import MetricCollector
+from packages.workflow_core.governance.optimization_loop import OptimizationLoop
+from packages.workflow_core.governance.trace_store import TraceStore
 from packages.workflow_core.models import WorkflowPackage
 from packages.workflow_core.runtime import WorkflowRunner
 from packages.workflow_core.storage import SQLiteWorkflowRepository, WorkflowRepository
@@ -55,6 +60,8 @@ def _build_llm_client() -> LLMClient:
             model=settings.llm_model or "",
             provider=settings.llm_provider,
             timeout_seconds=settings.llm_timeout_seconds,
+            max_tokens=settings.llm_max_tokens,
+            json_response_format=settings.llm_json_response_format,
         )
     return UnavailableLLMClient(
         provider=settings.llm_provider,

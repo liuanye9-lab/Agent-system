@@ -6,12 +6,12 @@ from typing import TypeVar
 from sqlalchemy import Column, Integer, MetaData, String, Table, Text, create_engine, delete, func, insert, inspect, select, text
 from sqlalchemy.engine import make_url
 
-from packages.workflow_core.models import AuditEvent, EvalResult, TraceRecord, WorkflowPackage, WorkflowRun
+from packages.workflow_core.models import AgentBuildSession, AuditEvent, EvalResult, TraceRecord, WorkflowPackage, WorkflowRun
 from packages.workflow_core.models.common import utc_now
 from packages.workflow_core.models.enums import WorkflowRunStatus
 
 T = TypeVar("T")
-SQLITE_REPOSITORY_SCHEMA_VERSION = "agent-workflow-builder.sqlite.v2"
+SQLITE_REPOSITORY_SCHEMA_VERSION = "agent-workflow-builder.sqlite.v3"
 
 
 class SQLiteWorkflowRepository:
@@ -61,6 +61,14 @@ class SQLiteWorkflowRepository:
             Column("updated_at", String, nullable=False),
             Column("payload_json", Text, nullable=False),
         )
+        self.agent_build_sessions = Table(
+            "agent_build_sessions",
+            self.metadata,
+            Column("session_id", String, primary_key=True),
+            Column("created_at", String, nullable=False),
+            Column("updated_at", String, nullable=False, index=True),
+            Column("payload_json", Text, nullable=False),
+        )
         self.eval_results = Table(
             "eval_results",
             self.metadata,
@@ -104,6 +112,7 @@ class SQLiteWorkflowRepository:
         metadata = self._repository_metadata_values()
         with self.engine.connect() as connection:
             workflow_count = connection.execute(select(func.count()).select_from(self.workflows)).scalar_one()
+            agent_build_session_count = connection.execute(select(func.count()).select_from(self.agent_build_sessions)).scalar_one()
         return {
             "backend": "sqlite",
             "schema_version": metadata.get("schema_version", "unknown"),
@@ -112,7 +121,30 @@ class SQLiteWorkflowRepository:
             "table_count": len(tables),
             "tables": sorted(tables),
             "workflow_count": workflow_count,
+            "agent_build_session_count": agent_build_session_count,
         }
+
+    def save_agent_build_session(self, session: AgentBuildSession) -> AgentBuildSession:
+        payload_json = session.model_dump_json(by_alias=True)
+        with self.engine.begin() as connection:
+            connection.execute(delete(self.agent_build_sessions).where(self.agent_build_sessions.c.session_id == session.session_id))
+            connection.execute(
+                insert(self.agent_build_sessions).values(
+                    session_id=session.session_id,
+                    created_at=session.created_at.isoformat(),
+                    updated_at=session.updated_at.isoformat(),
+                    payload_json=payload_json,
+                )
+            )
+        return session
+
+    def get_agent_build_session(self, session_id: str) -> AgentBuildSession | None:
+        statement = select(self.agent_build_sessions.c.payload_json).where(self.agent_build_sessions.c.session_id == session_id)
+        with self.engine.connect() as connection:
+            row = connection.execute(statement).first()
+        if row is None:
+            return None
+        return AgentBuildSession.model_validate_json(row.payload_json)
 
     def save_workflow(self, workflow_package: WorkflowPackage) -> WorkflowPackage:
         payload_json = workflow_package.model_dump_json(by_alias=True)

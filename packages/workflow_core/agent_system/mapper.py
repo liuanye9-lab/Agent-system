@@ -148,13 +148,13 @@ class AgentSystemBlueprintMapper:
             contract_id=f"contract-{node.node_id}",
             name=f"{node.name} contract",
             description="Schema boundary for an Agent System Builder node",
-            input_schema=node.input_schema or {"type": "object", "additionalProperties": True},
-            output_schema=node.output_schema or {
+            input_schema=_normalize_json_schema(node.input_schema or {"type": "object", "additionalProperties": True}),
+            output_schema=_normalize_json_schema(node.output_schema or {
                 "type": "object",
                 "properties": {"summary": {"type": "string"}},
                 "required": ["summary"],
                 "additionalProperties": True,
-            },
+            }),
             required_fields=[],
             validation_rules=["json_schema"],
             error_policy="fail_node_with_structured_error",
@@ -163,11 +163,17 @@ class AgentSystemBlueprintMapper:
         )
 
     def _tool_policies(self, blueprint: AgentSystemBlueprint) -> list[ToolPolicy]:
-        tool_names = list(dict.fromkeys(blueprint.tool_requirements + [tool for subagent in blueprint.subagents for tool in subagent.allowed_tools]))
+        raw_tool_names = (
+            blueprint.tool_requirements
+            + (blueprint.mother_agent.allowed_tools if blueprint.mother_agent else [])
+            + [tool for subagent in blueprint.subagents for tool in subagent.allowed_tools]
+        )
+        tool_names_by_id: dict[str, str] = {}
+        for tool in raw_tool_names:
+            tool_names_by_id.setdefault(_tool_id(tool), tool)
         policies: list[ToolPolicy] = []
-        for tool in tool_names:
-            tool_id = _tool_id(tool)
-            write_like = any(keyword in tool.lower() for keyword in ["publish", "send", "database"])
+        for tool_id, tool in tool_names_by_id.items():
+            write_like = any(keyword in tool.lower() for keyword in ["publish", "send", "database", "write", "writer", "reminder", "calendar"])
             policies.append(
                 ToolPolicy(
                     tool_id=tool_id,
@@ -239,3 +245,38 @@ def _slug(value: str) -> str:
 
 def _tool_id(value: str) -> str:
     return f"tool-{_slug(value)}"
+
+
+def _normalize_json_schema(schema: Any) -> dict[str, Any]:
+    if isinstance(schema, str):
+        return {"type": _normalize_json_schema_type(schema)}
+    if not isinstance(schema, dict):
+        return {"type": "object", "additionalProperties": True}
+    normalized = dict(schema)
+    if isinstance(normalized.get("type"), str):
+        normalized["type"] = _normalize_json_schema_type(normalized["type"])
+    if isinstance(normalized.get("properties"), dict):
+        normalized["properties"] = {
+            key: _normalize_json_schema(value)
+            for key, value in normalized["properties"].items()
+        }
+    if isinstance(normalized.get("items"), (dict, str)):
+        normalized["items"] = _normalize_json_schema(normalized["items"])
+    if not normalized.get("type") and "properties" in normalized:
+        normalized["type"] = "object"
+    return normalized
+
+
+def _normalize_json_schema_type(value: str) -> str:
+    normalized = value.lower().strip()
+    aliases = {
+        "str": "string",
+        "text": "string",
+        "int": "integer",
+        "float": "number",
+        "bool": "boolean",
+        "dict": "object",
+        "map": "object",
+        "list": "array",
+    }
+    return aliases.get(normalized, normalized)

@@ -2,13 +2,19 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from packages.workflow_core.models import AuditEvent, EvalResult, TraceRecord, WorkflowPackage, WorkflowRun
+from packages.workflow_core.models import AgentBuildSession, AuditEvent, EvalResult, TraceRecord, WorkflowPackage, WorkflowRun
 from packages.workflow_core.models.enums import WorkflowRunStatus
 
 
 class WorkflowRepository(Protocol):
     def get_repository_status(self) -> dict[str, object]:
         """Return low-sensitive repository health and schema metadata."""
+
+    def save_agent_build_session(self, session: AgentBuildSession) -> AgentBuildSession:
+        """Persist an Agent Builder conversation session."""
+
+    def get_agent_build_session(self, session_id: str) -> AgentBuildSession | None:
+        """Get an Agent Builder conversation session by id."""
 
     def save_workflow(self, workflow_package: WorkflowPackage) -> WorkflowPackage:
         """Persist a workflow package."""

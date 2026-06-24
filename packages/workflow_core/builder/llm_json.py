@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from packages.workflow_core.adapters import LLMClient
+from packages.workflow_core.adapters.llm import LLMClient
 
 
 def is_mock_llm(llm: LLMClient) -> bool:

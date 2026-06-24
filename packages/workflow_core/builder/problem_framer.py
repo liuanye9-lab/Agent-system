@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field, ValidationError
 
-from packages.workflow_core.adapters import LLMClient, MockLLMClient
+from packages.workflow_core.adapters.llm import LLMClient
+from packages.workflow_core.adapters.mock_llm import MockLLMClient
 from packages.workflow_core.builder.llm_json import extract_json_object, is_mock_llm
 from packages.workflow_core.models import ProblemSpec
 

@@ -13,6 +13,8 @@ class HttpJSONLLMClient:
         api_key: str | None = None,
         provider: str = "http",
         timeout_seconds: float = 30.0,
+        max_tokens: int | None = None,
+        json_response_format: bool = True,
     ) -> None:
         if not endpoint:
             raise ValueError("LLM endpoint is required")
@@ -23,9 +25,11 @@ class HttpJSONLLMClient:
         self.api_key = api_key
         self.provider = provider
         self.timeout_seconds = timeout_seconds
+        self.max_tokens = max_tokens
+        self.json_response_format = json_response_format
 
     def complete(self, prompt: str) -> str:
-        payload = {
+        payload: dict[str, Any] = {
             "model": self.model,
             "messages": [
                 {"role": "system", "content": "Return only valid JSON. Do not include markdown fences."},
@@ -33,6 +37,10 @@ class HttpJSONLLMClient:
             ],
             "temperature": 0,
         }
+        if self.max_tokens is not None:
+            payload["max_tokens"] = self.max_tokens
+        if self.json_response_format:
+            payload["response_format"] = {"type": "json_object"}
         body = json.dumps(payload).encode("utf-8")
         headers = {"Content-Type": "application/json"}
         if self.api_key:

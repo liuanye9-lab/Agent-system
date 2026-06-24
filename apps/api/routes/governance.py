@@ -14,7 +14,9 @@ from apps.api.pagination import DEFAULT_QUERY_LIMIT, LimitQuery, OffsetQuery
 from apps.api.routes.workflows import _build_release_readiness, dump_model
 from apps.api.security import require_scope
 from apps.api.settings import settings
-from packages.workflow_core.governance import MetricCollector, OTLPTraceExporter, OTLPTraceExporterConfig, OptimizationLoop, TraceExportError
+from packages.workflow_core.governance.metrics import MetricCollector
+from packages.workflow_core.governance.optimization_loop import OptimizationLoop
+from packages.workflow_core.governance.trace_exporter import OTLPTraceExporter, OTLPTraceExporterConfig, TraceExportError
 from packages.workflow_core.models import ActorContext, WorkflowPackage
 from packages.workflow_core.models.enums import NodeExecutionStatus, PermissionLevel, RiskLevel, WorkflowRunStatus
 from packages.workflow_core.ops import (

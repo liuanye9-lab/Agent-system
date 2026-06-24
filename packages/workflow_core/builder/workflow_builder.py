@@ -3,7 +3,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from packages.workflow_core.adapters import LLMClient, MockLLMClient
+from packages.workflow_core.adapters.llm import LLMClient
+from packages.workflow_core.adapters.mock_llm import MockLLMClient
 from packages.workflow_core.builder.contract_designer import ContractDesignerAgent
 from packages.workflow_core.builder.eval_generator import EvalGeneratorAgent
 from packages.workflow_core.builder.problem_framer import ProblemFramerAgent

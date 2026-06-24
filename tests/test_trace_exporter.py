@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from packages.workflow_core.governance import OTLPTraceExporter, OTLPTraceExporterConfig, TraceExportResponse
+from packages.workflow_core.governance.trace_exporter import OTLPTraceExporter, OTLPTraceExporterConfig, TraceExportResponse
 from packages.workflow_core.models import WorkflowPackage
 from packages.workflow_core.runtime import WorkflowRunner
 

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from datetime import datetime
 from enum import StrEnum
 from typing import Any
 
 from pydantic import Field, model_validator
 
 from packages.workflow_core.models.common import StrictBaseModel
+from packages.workflow_core.models.common import utc_now
 from packages.workflow_core.models.enums import RiskLevel
 
 
@@ -173,6 +175,128 @@ class SubAgentValidationIssue(StrictBaseModel):
 class SubAgentValidationReport(StrictBaseModel):
     valid: bool
     issues: list[SubAgentValidationIssue] = Field(default_factory=list)
+
+
+class AgentBuildMessage(StrictBaseModel):
+    role: str
+    content: str
+
+
+class AgentRequirementState(StrictBaseModel):
+    summary: str = ""
+    confirmed_facts: list[str] = Field(default_factory=list)
+    missing_information: list[str] = Field(default_factory=list)
+    assumptions: list[str] = Field(default_factory=list)
+    constraints: list[str] = Field(default_factory=list)
+
+
+class AgentReadinessDimension(StrictBaseModel):
+    name: str
+    score: int = Field(ge=0, le=100)
+    blocker: bool = False
+    notes: str = ""
+
+
+class AgentProductionReadinessReport(StrictBaseModel):
+    dimensions: list[AgentReadinessDimension] = Field(default_factory=list)
+    overall_score: int = Field(default=0, ge=0, le=100)
+    ready_for_candidate: bool = False
+    blocking_gaps: list[str] = Field(default_factory=list)
+    next_questions: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="before")
+    @classmethod
+    def fill_derived_fields(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        dimensions = data.get("dimensions") or []
+        if not dimensions:
+            return data
+
+        scores: list[int] = []
+        blocking_gaps: list[str] = []
+        for item in dimensions:
+            if isinstance(item, AgentReadinessDimension):
+                score = item.score
+                blocker = item.blocker
+                name = item.name
+            elif isinstance(item, dict):
+                score = int(item.get("score", 0))
+                blocker = bool(item.get("blocker", False))
+                name = str(item.get("name", "unknown"))
+            else:
+                continue
+            scores.append(score)
+            if blocker or score < 60:
+                blocking_gaps.append(name)
+
+        if scores and "overall_score" not in data:
+            data["overall_score"] = round(sum(scores) / len(scores))
+        if "blocking_gaps" not in data:
+            data["blocking_gaps"] = blocking_gaps
+        if "ready_for_candidate" not in data:
+            overall_score = int(data.get("overall_score", round(sum(scores) / len(scores)) if scores else 0))
+            data["ready_for_candidate"] = overall_score >= 70 and not data.get("blocking_gaps")
+        return data
+
+    @model_validator(mode="after")
+    def enforce_candidate_threshold(self) -> "AgentProductionReadinessReport":
+        if self.ready_for_candidate and (self.overall_score < 70 or self.blocking_gaps):
+            self.ready_for_candidate = False
+        return self
+
+
+class AgentSkillPackage(StrictBaseModel):
+    skill_id: str
+    name: str
+    agent_id: str
+    trigger_scenarios: list[str] = Field(default_factory=list)
+    system_prompt: str
+    input_schema: dict[str, Any] = Field(default_factory=lambda: {"type": "object", "additionalProperties": True})
+    output_schema: dict[str, Any] = Field(default_factory=lambda: {"type": "object", "additionalProperties": True})
+    tool_permissions: list[str] = Field(default_factory=list)
+    memory_scope: str = "task"
+    failure_policy: str = "return_structured_error"
+    evaluation_cases: list[dict[str, Any]] = Field(default_factory=list)
+    usage_notes: str = ""
+
+
+class AgentBuildChange(StrictBaseModel):
+    summary: str
+    changed_sections: list[str] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=utc_now)
+
+
+class AgentBuildLLMOutput(StrictBaseModel):
+    assistant_message: str
+    clarifying_questions: list[str] = Field(default_factory=list)
+    requirement_state: AgentRequirementState
+    topology_recommendation: AgentTopologyRecommendation
+    current_blueprint: AgentSystemBlueprint
+    readiness_report: AgentProductionReadinessReport
+    skill_packages: list[AgentSkillPackage] = Field(default_factory=list)
+    change_summary: str = "updated agent build state"
+
+
+class AgentBuildSession(StrictBaseModel):
+    session_id: str
+    user_request: str
+    messages: list[AgentBuildMessage] = Field(default_factory=list)
+    assistant_message: str
+    clarifying_questions: list[str] = Field(default_factory=list)
+    requirement_state: AgentRequirementState = Field(default_factory=AgentRequirementState)
+    topology_recommendation: AgentTopologyRecommendation
+    current_blueprint: AgentSystemBlueprint
+    readiness_report: AgentProductionReadinessReport = Field(default_factory=AgentProductionReadinessReport)
+    skill_packages: list[AgentSkillPackage] = Field(default_factory=list)
+    change_log: list[AgentBuildChange] = Field(default_factory=list)
+    candidate_workflow_id: str | None = None
+    candidate_version: str | None = None
+    generation_mode: str = "rules"
+    llm_provider: str | None = None
+    llm_model: str | None = None
+    created_at: datetime = Field(default_factory=utc_now)
+    updated_at: datetime = Field(default_factory=utc_now)
 
 
 class SubAgentResult(StrictBaseModel):

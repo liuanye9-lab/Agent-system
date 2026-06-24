@@ -188,6 +188,33 @@ curl -X POST http://127.0.0.1:8000/api/workflows/generate \
   -d '{"user_request":"更新新品上市流程","workflow_id":"new-product-launch","version":"0.2.0","save_as_current":false}'
 ```
 
+Create a conversational Agent Builder session:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/agent-systems/sessions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer {token}" \
+  -d '{"user_request":"客户跟进 Agent：整理沟通记录，识别客户阶段，输出下一步建议和周报草稿。"}'
+```
+
+Append a clarification answer and keep refining the Agent blueprint:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/agent-systems/sessions/{session_id}/messages \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer {token}" \
+  -d '{"message":"输入来自手动粘贴记录；只生成草稿；发布前人工确认；候选版本不能成为当前版本。"}'
+```
+
+Save the ready Agent Builder output as a candidate workflow version and Skill package draft set:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/agent-systems/sessions/{session_id}/candidate \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer {token}" \
+  -d '{"version":"0.1.0-chat-candidate"}'
+```
+
 Run a workflow:
 
 ```bash
@@ -399,11 +426,13 @@ docs                     Architecture and operating documents
 tests                    Pytest coverage
 ```
 
-Deployment details are documented in `docs/deployment.md`.
+Deployment details are documented in `docs/deployment.md`. Conversational Agent Builder behavior is documented in `docs/agent-system-builder.md`, and Agnes AI provider setup is documented in `docs/agnes-ai.md`.
 
 ## Current Project Scope
 
 - Builder Plane can use mock LLM or an environment-configured HTTP/OpenAI-compatible LLM to generate typed problem frames, process architecture, node data contracts, sandboxed tool policies, and eval specs; invalid LLM output falls back to deterministic safe defaults.
+- Conversational Agent Builder keeps a durable chat session, asks clarifying questions, merges structured LLM deltas, scores production readiness, generates Agent blueprints and Skill package drafts, and saves only candidate workflow versions when readiness gates pass.
+- Agent Builder candidate saves write low-sensitive audit events with readiness score, Skill package count, blocking-gap count, and `saved_as_current=false`.
 - Generated Agent specs record provider/model metadata.
 - Workflow generation accepts a structured business brief and optional process node list instead of forcing every request into the default example flow.
 - Workflow generation and import can save candidate versions without changing the current version, so diff and promotion gates can run before release.
@@ -447,6 +476,7 @@ Deployment details are documented in `docs/deployment.md`.
 - Workflow generation/import require `workflow:write`, workflow runs require `workflow:run`, run cancellation requires `workflow:cancel`, and manual eval execution requires `workflow:evaluate`.
 - Operational preflight checks report local, production, and release readiness across Python runtime, required files, CI coverage, container assets, backend configuration, auth hardening, LLM setup, frontend tooling, GitHub publishability, and Vercel publishability without exposing secret values.
 - Release configuration is captured in `.env.example`, and GitHub/Vercel deployment steps are documented in `docs/deployment.md`.
+- `tools/agent_builder_agnes_smoke.py` verifies the real Agnes-backed Agent Builder path from session creation through candidate save.
 - GitHub Actions CI covers backend tests, production preflight, API container health, write smoke checks, and Next.js dashboard lint/typecheck/build.
 - `Dockerfile.api` and `docker-compose.yml` provide a containerized API runtime with persistent SQLite storage and health checks.
 - Repository snapshots can export and restore workflow packages, versions, runs, eval results, and audit events for migration, disaster recovery, and release evidence.

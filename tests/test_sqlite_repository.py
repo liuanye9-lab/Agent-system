@@ -4,7 +4,20 @@ import json
 from pathlib import Path
 
 from packages.workflow_core.governance import EvalRunner
-from packages.workflow_core.models import AuditEvent, WorkflowPackage
+from packages.workflow_core.models import (
+    AgentBuildMessage,
+    AgentBuildSession,
+    AgentProductionReadinessReport,
+    AgentReadinessDimension,
+    AgentRequirementState,
+    AgentSkillPackage,
+    AgentSystemBlueprint,
+    AgentTopologyRecommendation,
+    AgentTopologyType,
+    AuditEvent,
+    WorkflowPackage,
+)
+from packages.workflow_core.models.enums import RiskLevel
 from packages.workflow_core.models.enums import WorkflowRunStatus
 from packages.workflow_core.runtime import WorkflowRunner
 from packages.workflow_core.storage import SQLiteWorkflowRepository
@@ -52,6 +65,56 @@ def test_sqlite_repository_records_schema_status(tmp_path: Path) -> None:
     assert status["schema_updated_at"]
     assert status["workflow_count"] == 1
     assert "repository_metadata" in status["tables"]
+
+
+def test_sqlite_repository_persists_agent_build_sessions(tmp_path: Path) -> None:
+    database_url = f"sqlite:///{tmp_path / 'workflow.sqlite3'}"
+    repo = SQLiteWorkflowRepository(database_url)
+    blueprint = AgentSystemBlueprint(
+        system_id="customer-followup-agent-system",
+        name="客户跟进 Agent System",
+        description="客户跟进",
+        primary_goal="自动整理沟通记录并输出周报",
+        expected_outputs=["周报"],
+        topology_type=AgentTopologyType.WORKFLOW_AGENT,
+        risk_level=RiskLevel.MEDIUM,
+    )
+    session = AgentBuildSession(
+        session_id="asb-test",
+        user_request="客户跟进",
+        messages=[AgentBuildMessage(role="user", content="客户跟进")],
+        assistant_message="已生成客户跟进 Agent 方案",
+        requirement_state=AgentRequirementState(summary="客户跟进"),
+        topology_recommendation=AgentTopologyRecommendation(
+            topology_type=AgentTopologyType.WORKFLOW_AGENT,
+            confidence=0.8,
+            reason="多步骤客户跟进流程",
+        ),
+        current_blueprint=blueprint,
+        readiness_report=AgentProductionReadinessReport(
+            dimensions=[AgentReadinessDimension(name="goal_clarity", score=80)],
+            overall_score=80,
+            ready_for_candidate=True,
+        ),
+        skill_packages=[
+            AgentSkillPackage(
+                skill_id="skill-customer-followup",
+                name="客户跟进 Skill",
+                agent_id="workflow-agent",
+                system_prompt="整理客户跟进记录并输出周报",
+            )
+        ],
+    )
+
+    repo.save_agent_build_session(session)
+    reloaded_repo = SQLiteWorkflowRepository(database_url)
+    persisted = reloaded_repo.get_agent_build_session("asb-test")
+
+    assert persisted is not None
+    assert persisted.session_id == "asb-test"
+    assert persisted.skill_packages
+    assert persisted.readiness_report.overall_score >= 70
+    assert reloaded_repo.get_repository_status()["agent_build_session_count"] == 1
 
 
 def test_sqlite_repository_finds_run_by_idempotency_key(tmp_path: Path) -> None:

@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import TypeVar
 
-from packages.workflow_core.models import AuditEvent, EvalResult, TraceRecord, WorkflowPackage, WorkflowRun
+from packages.workflow_core.models import AgentBuildSession, AuditEvent, EvalResult, TraceRecord, WorkflowPackage, WorkflowRun
 from packages.workflow_core.models.enums import WorkflowRunStatus
 
 T = TypeVar("T")
@@ -16,6 +16,7 @@ class MemoryWorkflowRepository:
         self._workflows: dict[str, WorkflowPackage] = {}
         self._workflow_versions: dict[str, dict[str, WorkflowPackage]] = defaultdict(dict)
         self._runs: dict[str, WorkflowRun] = {}
+        self._agent_build_sessions: dict[str, AgentBuildSession] = {}
         self._eval_results_by_workflow_id: dict[str, list[EvalResult]] = defaultdict(list)
         self._audit_events: dict[str, AuditEvent] = {}
 
@@ -25,9 +26,17 @@ class MemoryWorkflowRepository:
             "schema_version": self.schema_version,
             "workflow_count": len(self._workflows),
             "run_count": len(self._runs),
+            "agent_build_session_count": len(self._agent_build_sessions),
             "eval_result_count": sum(len(results) for results in self._eval_results_by_workflow_id.values()),
             "audit_event_count": len(self._audit_events),
         }
+
+    def save_agent_build_session(self, session: AgentBuildSession) -> AgentBuildSession:
+        self._agent_build_sessions[session.session_id] = session
+        return session
+
+    def get_agent_build_session(self, session_id: str) -> AgentBuildSession | None:
+        return self._agent_build_sessions.get(session_id)
 
     def save_workflow(self, workflow_package: WorkflowPackage) -> WorkflowPackage:
         self._workflows[workflow_package.workflow_id] = workflow_package

@@ -42,6 +42,15 @@ python3 tools/smoke.py --base-url https://your-api.example.com --write
 
 Write smoke imports a uniquely named `smoke-*` workflow package and starts a shadow run. It does not execute live writes, but it does persist the smoke workflow, run, traces, eval/audit side effects created by the API path, so do not use it against production data without an approved cleanup policy.
 
+For the conversational Agent Builder path, run the Agnes-backed integration smoke in local or staging environments where creating a candidate workflow version is acceptable:
+
+```bash
+PYTHONPATH=/tmp/agentflow-pydeps:$PWD \
+  python tools/agent_builder_agnes_smoke.py --require-candidate --max-turns 4
+```
+
+This smoke starts an Agent Builder session, sends follow-up answers, requires candidate readiness, saves a candidate workflow version, and verifies that the candidate is not saved as current. It prints only low-sensitive counts and ids.
+
 ## Continuous Integration
 
 `.github/workflows/ci.yml` runs on pushes and pull requests to `main`.
@@ -67,6 +76,13 @@ AGENT_WORKFLOW_SEED_EXAMPLE_WORKFLOW=false
 AGENT_WORKFLOW_RUN_RETENTION_DAYS=90
 AGENT_WORKFLOW_EVAL_RETENTION_DAYS=365
 AGENT_WORKFLOW_AUDIT_RETENTION_DAYS=365
+AGENT_WORKFLOW_LLM_PROVIDER=agnes
+AGENT_WORKFLOW_LLM_ENDPOINT=https://apihub.agnes-ai.com/v1
+AGENT_WORKFLOW_LLM_MODEL=agnes-2.0-flash
+AGENT_WORKFLOW_LLM_API_KEY=...
+AGENT_WORKFLOW_LLM_TIMEOUT_SECONDS=90
+AGENT_WORKFLOW_LLM_MAX_TOKENS=4096
+AGENT_WORKFLOW_LLM_JSON_RESPONSE_FORMAT=false
 ```
 
 Start the service:

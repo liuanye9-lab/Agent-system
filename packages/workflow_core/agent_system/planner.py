@@ -133,6 +133,7 @@ class SubAgentPlanner:
                     input_schema=_default_input_schema(),
                     output_schema=_default_output_schema(),
                     dependencies=["clarify-goal"],
+                    approval_required=any(_is_write_like_tool(tool) for tool in blueprint.tool_requirements),
                 ),
                 AgentWorkflowNode(
                     node_id="final-response",
@@ -328,3 +329,7 @@ def _subagent_call_output_schema() -> dict[str, Any]:
 
 def _slug(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-") or "agent"
+
+
+def _is_write_like_tool(tool: str) -> bool:
+    return any(keyword in tool.lower() for keyword in ["publish", "send", "database", "write", "writer", "reminder", "calendar"])
